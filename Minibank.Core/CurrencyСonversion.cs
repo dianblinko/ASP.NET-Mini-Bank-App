@@ -6,19 +6,19 @@ namespace Minibank.Core
     {
         private readonly IExchangeRateSource _ExchangeRateSource;
 
-        public CurrencyСonversion(IExchangeRateSource ExchangeRates)
+        public CurrencyСonversion(IExchangeRateSource ExchangeRatesSourse)
         {
-            _ExchangeRateSource = ExchangeRates; 
+            _ExchangeRateSource = ExchangeRatesSourse; 
         }
         public int Converting(int sum, string code)
         {
-            var value = _ExchangeRateSource.Get(code);
             if (sum < 0) 
             {
                 throw new UserFriendlyException("Отрицательная сумма");
             }
             else
             {
+                var value = _ExchangeRateSource.Get(code);
                 return value * sum;
             }
         }
