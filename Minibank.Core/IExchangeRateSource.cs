@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Minibank.Core
 {
-    public interface IExchangeRates
+    public interface IExchangeRateSource
     {
         int Get(string code);
     }

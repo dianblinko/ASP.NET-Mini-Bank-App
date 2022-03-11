@@ -4,15 +4,16 @@ namespace Minibank.Core
 {
     public class CurrencyСonversion : ICurrencyСonversion
     {
-        private readonly IExchangeRates _ExchangeRates;
-        public CurrencyСonversion(IExchangeRates ExchangeRates)
+        private readonly IExchangeRateSource _ExchangeRateSource;
+
+        public CurrencyСonversion(IExchangeRateSource ExchangeRates)
         {
-            _ExchangeRates = ExchangeRates; 
+            _ExchangeRateSource = ExchangeRates; 
         }
         public int Converting(int sum, string code)
         {
-            var value = _ExchangeRates.Get(code);
-            if (value * sum < 0)
+            var value = _ExchangeRateSource.Get(code);
+            if (sum < 0) 
             {
                 throw new UserFriendlyException("Отрицательная сумма");
             }
@@ -20,8 +21,6 @@ namespace Minibank.Core
             {
                 return value * sum;
             }
-            
         }
-        
     }
 }

@@ -36,7 +36,7 @@ namespace Minibank.Web
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Minibank.Web", Version = "v1" });
             });
 
-            services.AddScoped<IExchangeRates, ExchangeRates>();
+            services.AddScoped<IExchangeRateSource, ExchangeRateSource>();
             services.AddScoped<ICurrencyÑonversion, CurrencyÑonversion>();
 
         }

@@ -21,7 +21,7 @@ namespace Minibank.Web.Middlewares
             }
             catch (Exception exception)
             {
-                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await httpContext.Response.WriteAsJsonAsync(new { Message = "Внутренняя ошибка сервера" });
             }
         }

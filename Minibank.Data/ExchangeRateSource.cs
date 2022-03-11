@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace Minibank.Data
 {
-    public class ExchangeRates : IExchangeRates
+    public class ExchangeRateSource : IExchangeRateSource
     {
         Random random;
-        public ExchangeRates()
+        public ExchangeRateSource()
         {
             random = new Random();
         }
