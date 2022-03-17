@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Minibank.Core
+﻿namespace Minibank.Core
 {
     public class CurrencyСonversion : ICurrencyСonversion
     {
@@ -8,18 +6,21 @@ namespace Minibank.Core
 
         public CurrencyСonversion(IExchangeRateSource ExchangeRatesSourse)
         {
-            _ExchangeRateSource = ExchangeRatesSourse; 
+            _ExchangeRateSource = ExchangeRatesSourse;
         }
-        public int Converting(int sum, string code)
+        public double Converting(double amount, string fromCurrency, string toCurrency)
         {
-            if (sum < 0) 
+            if (amount < 0)
             {
-                throw new UserFriendlyException("Отрицательная сумма");
+                throw new ValidationException("Отрицательная сумма");
             }
             else
             {
-                var value = _ExchangeRateSource.Get(code);
-                return value * sum;
+                double amountInRub = fromCurrency == "RUB" ? amount :
+                    amount * _ExchangeRateSource.GetValuteCourse(fromCurrency);
+
+                return toCurrency == "RUB" ? amountInRub :
+                    amountInRub / _ExchangeRateSource.GetValuteCourse(toCurrency);
             }
         }
     }

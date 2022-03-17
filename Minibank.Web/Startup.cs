@@ -1,16 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Minibank.Core;
 using Minibank.Data;
 using Minibank.Web.Middlewares;
@@ -36,8 +29,8 @@ namespace Minibank.Web
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Minibank.Web", Version = "v1" });
             });
 
-            services.AddScoped<IExchangeRateSource, ExchangeRateSource>();
-            services.AddScoped<ICurrencyÑonversion, CurrencyÑonversion>();
+            services.AddData(Configuration);
+            services.AddCore();
 
         }
 
@@ -45,7 +38,7 @@ namespace Minibank.Web
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseMiddleware<ExceptionMiddleware>();
-            app.UseMiddleware<UserFriendlyExceptionMiddleware>();
+            app.UseMiddleware<ValidationExceptionMiddleware>();
 
             if (env.IsDevelopment())
             {

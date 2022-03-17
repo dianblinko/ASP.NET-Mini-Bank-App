@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-using System;
 using Minibank.Core;
+using System.Threading.Tasks;
 
 namespace Minibank.Web.Middlewares
 {
-    public class UserFriendlyExceptionMiddleware
+    public class ValidationExceptionMiddleware
     {
         public readonly RequestDelegate next;
 
-        public UserFriendlyExceptionMiddleware(RequestDelegate next)
+        public ValidationExceptionMiddleware(RequestDelegate next)
         {
             this.next = next;
         }
@@ -20,10 +19,10 @@ namespace Minibank.Web.Middlewares
             {
                 await next(httpContext);
             }
-            catch (UserFriendlyException exception)
+            catch (ValidationException exception)
             {
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await httpContext.Response.WriteAsJsonAsync(new { Message = exception.Message});
+                await httpContext.Response.WriteAsJsonAsync(new { Message = exception.Message });
             }
         }
     }
