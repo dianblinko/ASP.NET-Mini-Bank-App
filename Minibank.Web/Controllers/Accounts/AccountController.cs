@@ -63,25 +63,10 @@ namespace Minibank.Web.Controllers.Accounts
             });
         }
 
-        [HttpPut("{id}")]
-        public void Update(string id, AccountDto model)
-        {
-            _accountService.Update(new Account
-            {
-                Id = id,
-                UserId = model.UserId,
-                AmoumtOnAccount = model.AmoumtOnAccount,
-                Currency = model.Currency,
-                IsOpen = model.IsOpen,
-                OpeningDate = model.OpeningDate,
-                ClosingDate = model.ClosingDate
-            });
-        }
-
-        [HttpPut("toClose{id}")]
+        [HttpPut("close{id}")]
         public void ToClose(string id)
         {
-            _accountService.ToClose(id);
+            _accountService.Close(id);
         }
 
         [HttpDelete("{id}")]

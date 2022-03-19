@@ -14,14 +14,11 @@
             {
                 throw new ValidationException("Отрицательная сумма");
             }
-            else
-            {
-                double amountInRub = fromCurrency == "RUB" ? amount :
-                    amount * _ExchangeRateSource.GetValuteCourse(fromCurrency);
+            double amountInRub = fromCurrency == "RUB" ? amount :
+                amount * _ExchangeRateSource.GetValuteCourse(fromCurrency);
 
-                return toCurrency == "RUB" ? amountInRub :
-                    amountInRub / _ExchangeRateSource.GetValuteCourse(toCurrency);
-            }
+            return toCurrency == "RUB" ? amountInRub :
+                amountInRub / _ExchangeRateSource.GetValuteCourse(toCurrency);
         }
     }
 }

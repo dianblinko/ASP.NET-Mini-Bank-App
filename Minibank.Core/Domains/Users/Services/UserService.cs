@@ -14,34 +14,31 @@ namespace Minibank.Core.Domains.Users.Services
             _userRepository = userRepository;
             _accountRepository = accountRepository;
         }
-        void IUserService.Create(User user)
+        public void Create(User user)
         {
             _userRepository.Create(user);
         }
 
-        void IUserService.Delete(string id)
+        public void Delete(string id)
         {
             if (_accountRepository.ContainsUserId(id))
             {
                 throw new ValidationException("Нельзя удалить пользователя с привязанными аккаунтами");
             }
-            else
-            {
-                _userRepository.Delete(id);
-            }
+            _userRepository.Delete(id);
         }
 
-        User IUserService.GetUser(string id)
+        public User GetUser(string id)
         {
             return _userRepository.GetUser(id);
         }
 
-        IEnumerable<User> IUserService.GetAll()
+        public IEnumerable<User> GetAll()
         {
             return _userRepository.GetAll();
         }
 
-        void IUserService.Update(User user)
+        public void Update(User user)
         {
             _userRepository.Update(user);
         }

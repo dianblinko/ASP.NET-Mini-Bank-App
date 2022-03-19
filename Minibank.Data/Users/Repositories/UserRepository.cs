@@ -12,7 +12,7 @@ namespace Minibank.Data.Users.Repositories
 
         private static List<UserDbModel> _userStorage = new List<UserDbModel>();
 
-        void IUserRepository.Create(User user)
+        public void Create(User user)
         {
             var entity = new UserDbModel
             {
@@ -24,21 +24,18 @@ namespace Minibank.Data.Users.Repositories
             _userStorage.Add(entity);
         }
 
-        void IUserRepository.Delete(string id)
+        public void Delete(string id)
         {
             var entity = _userStorage.FirstOrDefault(it => it.Id == id);
 
             if (entity != null)
             {
-                _userStorage.Remove(entity);
-            }
-            else
-            {
                 throw new ValidationException("Пользователя с таким id не существует");
             }
+            _userStorage.Remove(entity);
         }
 
-        User IUserRepository.GetUser(string id)
+        public User GetUser(string id)
         {
             var entity = _userStorage.FirstOrDefault(it => it.Id == id);
 
@@ -55,7 +52,7 @@ namespace Minibank.Data.Users.Repositories
             };
         }
 
-        IEnumerable<User> IUserRepository.GetAll()
+        public IEnumerable<User> GetAll()
         {
             return _userStorage.Select(it => new User()
             {
@@ -65,19 +62,16 @@ namespace Minibank.Data.Users.Repositories
             });
         }
 
-        void IUserRepository.Update(User user)
+        public void Update(User user)
         {
             var entity = _userStorage.FirstOrDefault(it => it.Id == user.Id);
 
-            if (entity != null)
-            {
-                entity.Login = user.Login;
-                entity.Email = user.Email;
-            }
-            else
+            if (entity == null)
             {
                 throw new ValidationException("Пользователя с таким id не существует");
             }
+            entity.Login = user.Login;
+            entity.Email = user.Email;
         }
 
     }

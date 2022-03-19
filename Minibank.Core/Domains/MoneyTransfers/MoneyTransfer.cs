@@ -1,6 +1,6 @@
-﻿namespace Minibank.Web.Controllers.HistoryOfMoneyTransfer.Dto
+﻿namespace Minibank.Core.Domains.MoneyTransfers
 {
-    public class HistoryOfMoneyTransferDto
+    public class MoneyTransfer
     {
         public string Id { get; set; }
         public double Amount { get; set; }

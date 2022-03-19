@@ -10,7 +10,7 @@ namespace Minibank.Data.Accounts.Repositories
     public class AccountRepository : IAccountRepository
     {
         private static List<AccountDbModel> _accountStorage = new List<AccountDbModel>();
-        Account IAccountRepository.GetUserAccounts(string id)
+        public Account GetUserAccounts(string id)
         {
             var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
@@ -28,7 +28,7 @@ namespace Minibank.Data.Accounts.Repositories
                 ClosingDate = entity.ClosingDate
             };
         }
-        IEnumerable<Account> IAccountRepository.GetAll()
+        public IEnumerable<Account> GetAll()
         {
             return _accountStorage.Select(it => new Account()
             {
@@ -41,7 +41,7 @@ namespace Minibank.Data.Accounts.Repositories
                 ClosingDate = it.ClosingDate
             });
         }
-        void IAccountRepository.Create(Account account)
+        public void Create(Account account)
         {
             var entity = new AccountDbModel
             {
@@ -51,89 +51,59 @@ namespace Minibank.Data.Accounts.Repositories
                 Currency = account.Currency,
                 IsOpen = true,
                 OpeningDate = DateTime.Now,
-                ClosingDate = DateTime.MinValue
+                ClosingDate = null
             };
 
             _accountStorage.Add(entity);
         }
-        void IAccountRepository.Update(Account account)
-        {
-            var entity = _accountStorage.First(it => it.Id == account.Id);
-
-            if (entity != null)
-            {
-                entity.Id = account.Id;
-                entity.UserId = account.UserId;
-                entity.AmoumtOnAccount = account.AmoumtOnAccount;
-                entity.Currency = account.Currency;
-                entity.IsOpen = account.IsOpen;
-                entity.OpeningDate = account.OpeningDate;
-                entity.ClosingDate = account.ClosingDate;
-            }
-            else
-            {
-                throw new ValidationException("Аккаунта с таким id не существует");
-            }
-
-        }
-        void IAccountRepository.Delete(string id)
+        public void Delete(string id)
         {
             var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
 
-            if (entity != null)
-            {
-                _accountStorage.Remove(entity);
-            }
-            else
+            if (entity == null)
             {
                 throw new ValidationException("Аккаунта с таким id не сущесвует");
             }
+            _accountStorage.Remove(entity);
         }
-        bool IAccountRepository.ContainsUserId(string userId)
+        public bool ContainsUserId(string userId)
         {
             return _accountStorage.Any(it => it.UserId == userId);
         }
-        void IAccountRepository.ToCloseAccount(string id)
+        public void CloseAccount(string id)
         {
             var entity = _accountStorage.First(it => it.Id == id);
 
-            if (entity != null)
-            {
-                entity.IsOpen = false;
-                entity.ClosingDate = DateTime.Now;
-            }
-            else
+            if (entity == null)
             {
                 throw new ValidationException("Аккаунта с таким id не сущесвует");
+                
             }
+            entity.IsOpen = false;
+            entity.ClosingDate = DateTime.Now;
         }
 
         public void SubAmount(string id, double amount)
         {
             var entity = _accountStorage.First(it => it.Id == id);
 
-            if (entity != null)
-            {
-                entity.AmoumtOnAccount -= amount;
-            }
-            else
+            if (entity == null)
             {
                 throw new ValidationException("Аккаунта с таким id не сущесвует");
+                
             }
+            entity.AmoumtOnAccount -= amount;
         }
 
         public void AddAmount(string id, double amount)
         {
             var entity = _accountStorage.First(it => it.Id == id);
 
-            if (entity != null)
-            {
-                entity.AmoumtOnAccount += amount;
-            }
-            else
+            if (entity == null)
             {
                 throw new ValidationException("Аккаунта с таким id не сущесвует");
             }
+            entity.AmoumtOnAccount += amount;
         }
     }
 }

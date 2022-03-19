@@ -10,6 +10,6 @@ namespace Minibank.Web.Controllers.Accounts.Dto
         public string Currency { get; set; }
         public bool IsOpen { get; set; }
         public DateTime OpeningDate { get; set; }
-        public DateTime ClosingDate { get; set; }
+        public DateTime? ClosingDate { get; set; }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Minibank.Data.HttpClients.Models
 {
-    internal class CourseResponse
+    public class CourseResponse
     {
         public DateTime Date { get; set; }
 

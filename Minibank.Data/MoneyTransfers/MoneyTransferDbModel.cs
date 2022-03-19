@@ -1,6 +1,6 @@
-﻿namespace Minibank.Data.HistoryOfMoneyTransfers
+﻿namespace Minibank.Data.MoneyTransfers
 {
-    public class HistoryOfMoneyTransferDbModel
+    public class MoneyTransferDbModel
     {
         public string Id { get; set; }
         public double Amount { get; set; }

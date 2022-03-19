@@ -17,16 +17,11 @@ namespace Minibank.Data.HttpClients.Models
             var response = _httpClient.GetFromJsonAsync<CourseResponse>("daily_json.js")
                 .GetAwaiter().GetResult();
 
-            if (response.Valute.ContainsKey(code))
-            {
-                return (double)response.Valute[code].Value;
-            }
-            else
+            if (!response.Valute.ContainsKey(code))
             {
                 throw new ValidationException("Неправильный код валюты");
             }
-
+            return (double)response.Valute[code].Value;
         }
-
     }
 }
