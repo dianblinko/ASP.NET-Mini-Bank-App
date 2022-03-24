@@ -1,8 +1,7 @@
 ﻿using Minibank.Core.Domains.Accounts.Repositories;
 using Minibank.Core.Domains.MoneyTransfers;
-using Minibank.Core.Domains.MoneyTransfers.Services;
+using Minibank.Core.Domains.MoneyTransfers.Repositories;
 using Minibank.Core.Domains.Users.Repositories;
-using Minibank.Core.Domains.Users.Services;
 using System;
 using System.Collections.Generic;
 
@@ -18,14 +17,14 @@ namespace Minibank.Core.Domains.Accounts.Services
         private readonly IAccountRepository _accountRepository;
         private readonly IUserRepository _userRepository;
         private readonly ICurrencyСonversion _currencyСonversion;
-        private readonly IMoneyTransferService _moneyTransferService;
+        private readonly IMoneyTransferRepository _moneyTransferRepository;
 
         public AccountService(IAccountRepository accountRepository, ICurrencyСonversion currencyConversion, 
-            IMoneyTransferService moneyTransferService, IUserRepository userRepository)
+            IMoneyTransferRepository moneyTransferRepository, IUserRepository userRepository)
         {
             _accountRepository = accountRepository;
             _currencyСonversion = currencyConversion;
-            _moneyTransferService = moneyTransferService;
+            _moneyTransferRepository = moneyTransferRepository;
             _userRepository = userRepository;
         }
 
@@ -128,15 +127,17 @@ namespace Minibank.Core.Domains.Accounts.Services
             var fromAccountCurrency = fromAccount.Currency;
             var toAccountCurrency = toAccount.Currency;
             double resultAmount = amount - CalculateCommission(amount, fromAccountId, toAccountId);
+
             if (fromAccountCurrency != toAccountCurrency)
             {
                 resultAmount = _currencyСonversion.Converting(amount, fromAccountCurrency, toAccountCurrency);
             }
 
             resultAmount = Math.Round(resultAmount, 2);
+
             _accountRepository.SubAmount(fromAccountId, amount);
             _accountRepository.AddAmount(toAccountId, resultAmount);
-            _moneyTransferService.Create(new MoneyTransfer
+            _moneyTransferRepository.Create(new MoneyTransfer
             {
                 Amount = resultAmount,
                 Currency = toAccountCurrency,

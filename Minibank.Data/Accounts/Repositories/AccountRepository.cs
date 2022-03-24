@@ -78,7 +78,7 @@ namespace Minibank.Data.Accounts.Repositories
 
         public void CloseAccount(string id)
         {
-            var entity = _accountStorage.First(it => it.Id == id);
+            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
                 throw new ValidationException("Аккаунта с таким id не сущесвует");
@@ -90,7 +90,7 @@ namespace Minibank.Data.Accounts.Repositories
 
         public void SubAmount(string id, double amount)
         {
-            var entity = _accountStorage.First(it => it.Id == id);
+            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
                 throw new ValidationException("Аккаунта с таким id не сущесвует"); 
@@ -101,7 +101,7 @@ namespace Minibank.Data.Accounts.Repositories
 
         public void AddAmount(string id, double amount)
         {
-            var entity = _accountStorage.First(it => it.Id == id);
+            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
                 throw new ValidationException("Аккаунта с таким id не сущесвует");
@@ -112,7 +112,7 @@ namespace Minibank.Data.Accounts.Repositories
 
         public bool Exists(string id)
         {
-            var entity = _accountStorage.First(it => it.Id == id);
+            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
                 return false;
