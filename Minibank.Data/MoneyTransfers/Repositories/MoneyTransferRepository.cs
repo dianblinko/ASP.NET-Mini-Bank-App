@@ -21,7 +21,6 @@ namespace Minibank.Data.MoneyTransfers.Repositories
                 FromAccountId = moneyTransfer.FromAccountId,
                 ToAccountId = moneyTransfer.ToAccountId
             };
-
             moneyTransferStorage.Add(entity);
         }
     }

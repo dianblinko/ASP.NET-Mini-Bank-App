@@ -6,7 +6,6 @@ namespace Minibank.Core
     {
         public ValidationException(string? message) : base(message)
         {
-
         }
     }
 }

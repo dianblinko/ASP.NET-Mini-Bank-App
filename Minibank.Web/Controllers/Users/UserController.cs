@@ -22,7 +22,6 @@ namespace Minibank.Web.Controllers.Users
         public UserDto Get(string id)
         {
             var model = _userService.GetUser(id);
-
             return new UserDto
             {
                 Id = model.Id,
@@ -69,7 +68,5 @@ namespace Minibank.Web.Controllers.Users
         {
             _userService.Delete(id);
         }
-
     }
-
 }

@@ -14,6 +14,7 @@ namespace Minibank.Core.Domains.Users.Services
             _userRepository = userRepository;
             _accountRepository = accountRepository;
         }
+
         public void Create(User user)
         {
             _userRepository.Create(user);
@@ -21,15 +22,24 @@ namespace Minibank.Core.Domains.Users.Services
 
         public void Delete(string id)
         {
-            if (_accountRepository.ContainsUserId(id))
+            if (!_userRepository.Exists(id))
+            {
+                throw new ValidationException("Пользователя с таким id не существует");
+            }
+            if (_accountRepository.ExistForUserId(id))
             {
                 throw new ValidationException("Нельзя удалить пользователя с привязанными аккаунтами");
             }
+
             _userRepository.Delete(id);
         }
 
         public User GetUser(string id)
         {
+            if (!_userRepository.Exists(id))
+            {
+                throw new ValidationException("Пользователя с таким id не существует");
+            }
             return _userRepository.GetUser(id);
         }
 
@@ -40,6 +50,10 @@ namespace Minibank.Core.Domains.Users.Services
 
         public void Update(User user)
         {
+            if (!_userRepository.Exists(user.Id))
+            {
+                throw new ValidationException("Пользователя с таким id не существует");
+            }
             _userRepository.Update(user);
         }
     }

@@ -9,7 +9,6 @@ namespace Minibank.Data.Users.Repositories
 {
     public class UserRepository : IUserRepository
     {
-
         private static List<UserDbModel> _userStorage = new List<UserDbModel>();
 
         public void Create(User user)
@@ -27,18 +26,17 @@ namespace Minibank.Data.Users.Repositories
         public void Delete(string id)
         {
             var entity = _userStorage.FirstOrDefault(it => it.Id == id);
-
             if (entity != null)
             {
                 throw new ValidationException("Пользователя с таким id не существует");
             }
+
             _userStorage.Remove(entity);
         }
 
         public User GetUser(string id)
         {
             var entity = _userStorage.FirstOrDefault(it => it.Id == id);
-
             if (entity == null)
             {
                 return null;
@@ -65,14 +63,24 @@ namespace Minibank.Data.Users.Repositories
         public void Update(User user)
         {
             var entity = _userStorage.FirstOrDefault(it => it.Id == user.Id);
-
             if (entity == null)
             {
                 throw new ValidationException("Пользователя с таким id не существует");
             }
+
             entity.Login = user.Login;
             entity.Email = user.Email;
         }
 
+        public bool Exists(string id)
+        {
+            var entity = _userStorage.FirstOrDefault(it => it.Id == id);
+            if (entity == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

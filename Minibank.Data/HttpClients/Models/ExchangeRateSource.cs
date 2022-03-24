@@ -12,11 +12,11 @@ namespace Minibank.Data.HttpClients.Models
         {
             _httpClient = httpClient;
         }
+
         public double GetValuteCourse(string code)
         {
             var response = _httpClient.GetFromJsonAsync<CourseResponse>("daily_json.js")
                 .GetAwaiter().GetResult();
-
             if (!response.Valute.ContainsKey(code))
             {
                 throw new ValidationException("Неправильный код валюты");

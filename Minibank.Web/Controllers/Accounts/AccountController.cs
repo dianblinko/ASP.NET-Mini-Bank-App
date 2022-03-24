@@ -11,7 +11,6 @@ namespace Minibank.Web.Controllers.Accounts
     [Route("[controller]")]
     public class AccountController
     {
-
         private readonly IAccountService _accountService;
 
         public AccountController(IAccountService accountService)
@@ -63,7 +62,7 @@ namespace Minibank.Web.Controllers.Accounts
             });
         }
 
-        [HttpPut("close{id}")]
+        [HttpPut("close/{id}")]
         public void ToClose(string id)
         {
             _accountService.Close(id);
@@ -75,13 +74,13 @@ namespace Minibank.Web.Controllers.Accounts
             _accountService.Delete(id);
         }
 
-        [HttpGet("calculateCommission{amount},{fromAccountId},{toAccountId}")]
+        [HttpGet("calculateCommission")]
         public double CalculateCommission(double amount, string fromAccountId, string toAccountId)
         {
             return _accountService.CalculateCommission(amount, fromAccountId, toAccountId);
         }
 
-        [HttpPut("transferMoney{amount},{fromAccountId},{toAccountId}")]
+        [HttpPut("transferMoney")]
         public void TransferMoney(double amount, string fromAccountId, string toAccountId)
         {
             _accountService.TransferMoney(amount, fromAccountId, toAccountId);

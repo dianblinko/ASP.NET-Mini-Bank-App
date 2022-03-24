@@ -10,6 +10,7 @@ namespace Minibank.Data.Accounts.Repositories
     public class AccountRepository : IAccountRepository
     {
         private static List<AccountDbModel> _accountStorage = new List<AccountDbModel>();
+
         public Account GetUserAccounts(string id)
         {
             var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
@@ -17,6 +18,7 @@ namespace Minibank.Data.Accounts.Repositories
             {
                 return null;
             }
+
             return new Account
             {
                 Id = entity.Id,
@@ -28,6 +30,7 @@ namespace Minibank.Data.Accounts.Repositories
                 ClosingDate = entity.ClosingDate
             };
         }
+
         public IEnumerable<Account> GetAll()
         {
             return _accountStorage.Select(it => new Account()
@@ -41,6 +44,7 @@ namespace Minibank.Data.Accounts.Repositories
                 ClosingDate = it.ClosingDate
             });
         }
+
         public void Create(Account account)
         {
             var entity = new AccountDbModel
@@ -53,32 +57,33 @@ namespace Minibank.Data.Accounts.Repositories
                 OpeningDate = DateTime.Now,
                 ClosingDate = null
             };
-
             _accountStorage.Add(entity);
         }
+
         public void Delete(string id)
         {
             var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
-
             if (entity == null)
             {
                 throw new ValidationException("Аккаунта с таким id не сущесвует");
             }
+
             _accountStorage.Remove(entity);
         }
-        public bool ContainsUserId(string userId)
+
+        public bool ExistForUserId(string userId)
         {
             return _accountStorage.Any(it => it.UserId == userId);
         }
+
         public void CloseAccount(string id)
         {
             var entity = _accountStorage.First(it => it.Id == id);
-
             if (entity == null)
             {
                 throw new ValidationException("Аккаунта с таким id не сущесвует");
-                
             }
+
             entity.IsOpen = false;
             entity.ClosingDate = DateTime.Now;
         }
@@ -86,24 +91,34 @@ namespace Minibank.Data.Accounts.Repositories
         public void SubAmount(string id, double amount)
         {
             var entity = _accountStorage.First(it => it.Id == id);
-
             if (entity == null)
             {
-                throw new ValidationException("Аккаунта с таким id не сущесвует");
-                
+                throw new ValidationException("Аккаунта с таким id не сущесвует"); 
             }
+
             entity.AmoumtOnAccount -= amount;
         }
 
         public void AddAmount(string id, double amount)
         {
             var entity = _accountStorage.First(it => it.Id == id);
-
             if (entity == null)
             {
                 throw new ValidationException("Аккаунта с таким id не сущесвует");
             }
+
             entity.AmoumtOnAccount += amount;
+        }
+
+        public bool Exists(string id)
+        {
+            var entity = _accountStorage.First(it => it.Id == id);
+            if (entity == null)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

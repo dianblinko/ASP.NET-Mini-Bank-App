@@ -9,6 +9,6 @@ namespace Minibank.Core.Domains.Users.Repositories
         void Create(User user);
         void Update(User user);
         void Delete(string id);
-
+        bool Exists(string id);
     }
 }

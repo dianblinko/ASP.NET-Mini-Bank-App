@@ -8,9 +8,10 @@ namespace Minibank.Core.Domains.Accounts.Repositories
         IEnumerable<Account> GetAll();
         void Create(Account account);
         void Delete(string id);
-        bool ContainsUserId(string userId);
+        bool ExistForUserId(string userId);
         void CloseAccount(string id);
         void SubAmount(string id, double amount);
         void AddAmount(string id, double amount);
+        bool Exists(string id);
     }
 }
