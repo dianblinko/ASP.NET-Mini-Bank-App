@@ -1,4 +1,4 @@
-﻿using Minibank.Core;
+﻿using Minibank.Core.Domains;
 using Minibank.Core.Domains.MoneyTransfers;
 using Minibank.Core.Domains.MoneyTransfers.Repositories;
 using System;

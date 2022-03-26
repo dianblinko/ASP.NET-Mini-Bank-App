@@ -1,7 +1,9 @@
-﻿namespace Minibank.Core
+﻿using Minibank.Core.Domains;
+
+namespace Minibank.Core
 {
     public interface IExchangeRateSource
     {
-        double GetValuteCourse(string code);
+        double GetValuteCourse(CurrencyEnum code);
     }
 }

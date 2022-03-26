@@ -52,7 +52,7 @@ namespace Minibank.Data.Accounts.Repositories
                 Id = Guid.NewGuid().ToString(),
                 UserId = account.UserId,
                 AmoumtOnAccount = account.AmoumtOnAccount,
-                Currency = account.Currency,
+                Currency = account.Currency, 
                 IsOpen = true,
                 OpeningDate = DateTime.Now,
                 ClosingDate = null
@@ -65,7 +65,7 @@ namespace Minibank.Data.Accounts.Repositories
             var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
-                throw new ValidationException("Аккаунта с таким id не сущесвует");
+                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
             }
 
             _accountStorage.Remove(entity);
@@ -81,7 +81,7 @@ namespace Minibank.Data.Accounts.Repositories
             var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
-                throw new ValidationException("Аккаунта с таким id не сущесвует");
+                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
             }
 
             entity.IsOpen = false;
@@ -93,7 +93,7 @@ namespace Minibank.Data.Accounts.Repositories
             var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
-                throw new ValidationException("Аккаунта с таким id не сущесвует"); 
+                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
             }
 
             entity.AmoumtOnAccount -= amount;
@@ -104,7 +104,7 @@ namespace Minibank.Data.Accounts.Repositories
             var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
-                throw new ValidationException("Аккаунта с таким id не сущесвует");
+                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
             }
 
             entity.AmoumtOnAccount += amount;

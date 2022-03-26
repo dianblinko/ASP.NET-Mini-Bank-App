@@ -1,15 +1,17 @@
-﻿namespace Minibank.Core
+﻿using Minibank.Core.Domains;
+
+namespace Minibank.Core
 {
-    public class CurrencyСonversion : ICurrencyСonversion
+    public class CurrencyConversion : ICurrencyConversion
     {
         private readonly IExchangeRateSource _ExchangeRateSource;
 
-        public CurrencyСonversion(IExchangeRateSource ExchangeRatesSourse)
+        public CurrencyConversion(IExchangeRateSource ExchangeRatesSourse)
         {
             _ExchangeRateSource = ExchangeRatesSourse;
         }
 
-        public double Converting(double amount, string fromCurrency, string toCurrency)
+        public double Converting(double amount, CurrencyEnum fromCurrency, CurrencyEnum toCurrency)
         {
             if (amount < 0)
             {
@@ -19,10 +21,9 @@
             double fromValuteCourse = _ExchangeRateSource.GetValuteCourse(fromCurrency);
             double toValuteCourse = _ExchangeRateSource.GetValuteCourse(toCurrency);
 
-            double amountInRub = fromCurrency == "RUB" ? amount :
+            double amountInRub = fromCurrency.ToString() == "RUB" ? amount :
                 amount * fromValuteCourse;
-
-            return toCurrency == "RUB" ? amountInRub :
+            return toCurrency.ToString() == "RUB" ? amountInRub :
                 amountInRub / toValuteCourse;
         }
     }

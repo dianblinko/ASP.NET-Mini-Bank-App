@@ -28,7 +28,7 @@ namespace Minibank.Data.Users.Repositories
             var entity = _userStorage.FirstOrDefault(it => it.Id == id);
             if (entity != null)
             {
-                throw new ValidationException("Пользователя с таким id не существует");
+                throw new ObjectNotFoundException($"Пользователь id={id} не найден");
             }
 
             _userStorage.Remove(entity);
@@ -65,7 +65,7 @@ namespace Minibank.Data.Users.Repositories
             var entity = _userStorage.FirstOrDefault(it => it.Id == user.Id);
             if (entity == null)
             {
-                throw new ValidationException("Пользователя с таким id не существует");
+                throw new ObjectNotFoundException($"Пользователь id={user.Id} не найден");
             }
 
             entity.Login = user.Login;

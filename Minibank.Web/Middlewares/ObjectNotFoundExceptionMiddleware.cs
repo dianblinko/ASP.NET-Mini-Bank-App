@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace Minibank.Web.Middlewares
 {
-    public class ValidationExceptionMiddleware
+    public class ObjectNotFoundExceptionMiddleware
     {
         public readonly RequestDelegate next;
 
-        public ValidationExceptionMiddleware(RequestDelegate next)
+        public ObjectNotFoundExceptionMiddleware(RequestDelegate next)
         {
             this.next = next;
         }
@@ -19,9 +19,9 @@ namespace Minibank.Web.Middlewares
             {
                 await next(httpContext);
             }
-            catch (ObjectNotFoundException exception)
+            catch (ValidationException exception)
             {
-                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
                 await httpContext.Response.WriteAsJsonAsync(new { Message = exception.Message });
             }
         }

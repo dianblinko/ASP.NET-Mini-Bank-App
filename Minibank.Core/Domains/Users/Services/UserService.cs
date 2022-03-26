@@ -24,7 +24,7 @@ namespace Minibank.Core.Domains.Users.Services
         {
             if (!_userRepository.Exists(id))
             {
-                throw new ValidationException("Пользователя с таким id не существует");
+                throw new ObjectNotFoundException($"Пользователь id={id} не найден");
             }
             if (_accountRepository.ExistForUserId(id))
             {
@@ -38,8 +38,9 @@ namespace Minibank.Core.Domains.Users.Services
         {
             if (!_userRepository.Exists(id))
             {
-                throw new ValidationException("Пользователя с таким id не существует");
+                throw new ObjectNotFoundException($"Пользователь id={id} не найден");
             }
+
             return _userRepository.GetUser(id);
         }
 
@@ -52,8 +53,10 @@ namespace Minibank.Core.Domains.Users.Services
         {
             if (!_userRepository.Exists(user.Id))
             {
-                throw new ValidationException("Пользователя с таким id не существует");
+
+                throw new ObjectNotFoundException($"Пользователь id={user.Id} не найден");
             }
+
             _userRepository.Update(user);
         }
     }
