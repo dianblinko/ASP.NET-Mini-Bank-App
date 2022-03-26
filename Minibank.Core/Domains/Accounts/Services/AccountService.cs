@@ -5,25 +5,20 @@ using Minibank.Core.Domains.Users.Repositories;
 using System;
 using System.Collections.Generic;
 
-[Flags] public enum permittedCurrencies
-{
-    RUB, USD, EUR
-}
-
 namespace Minibank.Core.Domains.Accounts.Services
 {
     public class AccountService : IAccountService
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IUserRepository _userRepository;
-        private readonly ICurrencyСonversion _currencyСonversion;
+        private readonly ICurrencyConversion _currencyConversion;
         private readonly IMoneyTransferRepository _moneyTransferRepository;
 
-        public AccountService(IAccountRepository accountRepository, ICurrencyСonversion currencyConversion, 
+        public AccountService(IAccountRepository accountRepository, ICurrencyConversion currencyConversion, 
             IMoneyTransferRepository moneyTransferRepository, IUserRepository userRepository)
         {
             _accountRepository = accountRepository;
-            _currencyСonversion = currencyConversion;
+            _currencyConversion = currencyConversion;
             _moneyTransferRepository = moneyTransferRepository;
             _userRepository = userRepository;
         }
@@ -32,9 +27,9 @@ namespace Minibank.Core.Domains.Accounts.Services
         {
             if (!_userRepository.Exists(account.UserId))
             {
-                throw new ValidationException("Пользователя с таким id не существует");
+                throw new ObjectNotFoundException($"Пользователь id={account.UserId} не найден");
             }
-            if (!Enum.IsDefined(typeof(permittedCurrencies), account.Currency))     
+            if (!Enum.IsDefined(typeof(CurrencyEnum), account.Currency))     
             {
                 throw new ValidationException("Задана недопустюмая валюта счета");
             }
@@ -46,7 +41,7 @@ namespace Minibank.Core.Domains.Accounts.Services
         {
             if (!_accountRepository.Exists(id))
             {
-                throw new ValidationException("Аккаунта с таким id не существует");
+                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
             }
 
             _accountRepository.Delete(id);
@@ -56,7 +51,7 @@ namespace Minibank.Core.Domains.Accounts.Services
         {
             if (!_accountRepository.Exists(id))
             {
-                throw new ValidationException("Аккаунта с таким id не существует");
+                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
             }
 
             return _accountRepository.GetUserAccounts(id);
@@ -72,7 +67,7 @@ namespace Minibank.Core.Domains.Accounts.Services
             Account account = GetUserAccounts(id);
             if (account == null)
             {
-                throw new ValidationException("Аккаунта с таким id не существует");
+                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
             }
             if (account.AmoumtOnAccount != 0)
             {
@@ -105,11 +100,11 @@ namespace Minibank.Core.Domains.Accounts.Services
             }
             if (fromAccount == null)
             {
-                throw new ValidationException("Неправильно введен id аккаунта отправителя");
+                throw new ObjectNotFoundException($"Аккаунт id={fromAccount.Id} не найден");
             }
             if (toAccount == null)
             {
-                throw new ValidationException("Неправильно введен id аккаунта получателя");
+                throw new ObjectNotFoundException($"Аккаунт id={toAccount.Id} не найден");
             }
             if (!fromAccount.IsOpen)
             {
@@ -124,19 +119,20 @@ namespace Minibank.Core.Domains.Accounts.Services
                 throw new ValidationException("Недостаточно средств");
             }
 
-            var fromAccountCurrency = fromAccount.Currency;
+            var fromAccountCurrency = fromAccount.Currency; 
             var toAccountCurrency = toAccount.Currency;
             double resultAmount = amount - CalculateCommission(amount, fromAccountId, toAccountId);
 
             if (fromAccountCurrency != toAccountCurrency)
             {
-                resultAmount = _currencyСonversion.Converting(amount, fromAccountCurrency, toAccountCurrency);
+                resultAmount = _currencyConversion.Converting(amount, fromAccountCurrency, toAccountCurrency);
             }
 
             resultAmount = Math.Round(resultAmount, 2);
 
             _accountRepository.SubAmount(fromAccountId, amount);
             _accountRepository.AddAmount(toAccountId, resultAmount);
+
             _moneyTransferRepository.Create(new MoneyTransfer
             {
                 Amount = resultAmount,

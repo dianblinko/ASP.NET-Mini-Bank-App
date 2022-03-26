@@ -31,6 +31,15 @@ namespace Minibank.Web
 
             services.AddData(Configuration);
             services.AddCore();
+            services
+                .AddMvc(options =>
+                {
+                    options.EnableEndpointRouting = false;
+                })
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+                });
 
         }
 
@@ -38,6 +47,7 @@ namespace Minibank.Web
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<ObjectNotFoundExceptionMiddleware>();
             app.UseMiddleware<ValidationExceptionMiddleware>();
 
             if (env.IsDevelopment())
