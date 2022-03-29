@@ -47,8 +47,6 @@ namespace Minibank.Web
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseMiddleware<ExceptionMiddleware>();
-            app.UseMiddleware<ObjectNotFoundExceptionMiddleware>();
-            app.UseMiddleware<ValidationExceptionMiddleware>();
 
             if (env.IsDevelopment())
             {

@@ -22,7 +22,7 @@ namespace Minibank.Web.Controllers.Accounts
         [HttpGet("{id}")]
         public AccountDto GetUserAccounts(string id)
         {
-            var model = _accountService.GetUserAccounts(id);
+            var model = _accountService.GetById(id);
 
             return new AccountDto
             {

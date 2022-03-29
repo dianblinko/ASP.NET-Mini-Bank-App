@@ -39,22 +39,12 @@ namespace Minibank.Core.Domains.Accounts.Services
 
         public void Delete(string id)
         {
-            if (!_accountRepository.Exists(id))
-            {
-                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
-            }
-
             _accountRepository.Delete(id);
         }
 
-        public Account GetUserAccounts(string id)
+        public Account GetById(string id)
         {
-            if (!_accountRepository.Exists(id))
-            {
-                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
-            }
-
-            return _accountRepository.GetUserAccounts(id);
+            return _accountRepository.GetById(id);
         }
 
         public IEnumerable<Account> GetAll()
@@ -62,13 +52,9 @@ namespace Minibank.Core.Domains.Accounts.Services
             return _accountRepository.GetAll();
         }
 
-        public void Close(String id)
+        public void Close(string id)
         {
-            Account account = GetUserAccounts(id);
-            if (account == null)
-            {
-                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
-            }
+            Account account = _accountRepository.GetById(id);
             if (account.AmoumtOnAccount != 0)
             {
                 throw new ValidationException("Нельзя закрыть аккаунт с деньгами на нем");
@@ -79,8 +65,8 @@ namespace Minibank.Core.Domains.Accounts.Services
 
         public double CalculateCommission(double amount, string fromAccountId, string toAccountId)
         {
-            var fromAccountUserId = _accountRepository.GetUserAccounts(fromAccountId).UserId;
-            var toAccountUserId = _accountRepository.GetUserAccounts(toAccountId).UserId;
+            var fromAccountUserId = _accountRepository.GetById(fromAccountId).UserId;
+            var toAccountUserId = _accountRepository.GetById(toAccountId).UserId;
             if (fromAccountUserId == toAccountUserId)
             {
                 return 0.0;
@@ -92,19 +78,11 @@ namespace Minibank.Core.Domains.Accounts.Services
 
         public void TransferMoney(double amount, string fromAccountId, string toAccountId)
         {
-            Account fromAccount = _accountRepository.GetUserAccounts(fromAccountId);
-            Account toAccount = _accountRepository.GetUserAccounts(toAccountId);
+            Account fromAccount = _accountRepository.GetById(fromAccountId);
+            Account toAccount = _accountRepository.GetById(toAccountId);
             if (amount <= 0)
             {
                 throw new ValidationException("Неправильна введена сумма перевода");
-            }
-            if (fromAccount == null)
-            {
-                throw new ObjectNotFoundException($"Аккаунт id={fromAccount.Id} не найден");
-            }
-            if (toAccount == null)
-            {
-                throw new ObjectNotFoundException($"Аккаунт id={toAccount.Id} не найден");
             }
             if (!fromAccount.IsOpen)
             {
@@ -130,8 +108,11 @@ namespace Minibank.Core.Domains.Accounts.Services
 
             resultAmount = Math.Round(resultAmount, 2);
 
-            _accountRepository.SubAmount(fromAccountId, amount);
-            _accountRepository.AddAmount(toAccountId, resultAmount);
+            fromAccount.AmoumtOnAccount -= amount;
+            _accountRepository.Update(fromAccount);
+
+            toAccount.AmoumtOnAccount += resultAmount;
+            _accountRepository.Update(toAccount);
 
             _moneyTransferRepository.Create(new MoneyTransfer
             {

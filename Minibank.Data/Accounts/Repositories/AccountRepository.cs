@@ -11,12 +11,12 @@ namespace Minibank.Data.Accounts.Repositories
     {
         private static List<AccountDbModel> _accountStorage = new List<AccountDbModel>();
 
-        public Account GetUserAccounts(string id)
+        public Account GetById(string id)
         {
             var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
-                return null;
+                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
             }
 
             return new Account
@@ -59,6 +59,21 @@ namespace Minibank.Data.Accounts.Repositories
             };
             _accountStorage.Add(entity);
         }
+        public void Update(Account account)
+        {
+            var entity = _accountStorage.FirstOrDefault(it => it.Id == account.Id);
+            if (entity == null)
+            {
+                throw new ObjectNotFoundException($"Аккаунт id={account.Id} не найден");
+            }
+
+            entity.UserId = account.UserId;
+            entity.AmoumtOnAccount = account.AmoumtOnAccount;
+            entity.Currency = account.Currency;
+            entity.IsOpen = account.IsOpen;
+            entity.ClosingDate = account.ClosingDate;
+            entity.OpeningDate = account.OpeningDate;
+        }
 
         public void Delete(string id)
         {
@@ -79,11 +94,6 @@ namespace Minibank.Data.Accounts.Repositories
         public void CloseAccount(string id)
         {
             var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
-            if (entity == null)
-            {
-                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
-            }
-
             entity.IsOpen = false;
             entity.ClosingDate = DateTime.Now;
         }
@@ -112,13 +122,7 @@ namespace Minibank.Data.Accounts.Repositories
 
         public bool Exists(string id)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
-            if (entity == null)
-            {
-                return false;
-            }
-
-            return true;
+            return _accountStorage.Any(it =>it.Id == id);
         }
     }
 }

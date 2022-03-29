@@ -22,10 +22,6 @@ namespace Minibank.Core.Domains.Users.Services
 
         public void Delete(string id)
         {
-            if (!_userRepository.Exists(id))
-            {
-                throw new ObjectNotFoundException($"Пользователь id={id} не найден");
-            }
             if (_accountRepository.ExistForUserId(id))
             {
                 throw new ValidationException("Нельзя удалить пользователя с привязанными аккаунтами");
@@ -36,11 +32,6 @@ namespace Minibank.Core.Domains.Users.Services
 
         public User GetUser(string id)
         {
-            if (!_userRepository.Exists(id))
-            {
-                throw new ObjectNotFoundException($"Пользователь id={id} не найден");
-            }
-
             return _userRepository.GetUser(id);
         }
 
@@ -51,12 +42,6 @@ namespace Minibank.Core.Domains.Users.Services
 
         public void Update(User user)
         {
-            if (!_userRepository.Exists(user.Id))
-            {
-
-                throw new ObjectNotFoundException($"Пользователь id={user.Id} не найден");
-            }
-
             _userRepository.Update(user);
         }
     }

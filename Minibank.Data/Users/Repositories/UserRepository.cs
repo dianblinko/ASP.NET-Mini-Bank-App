@@ -39,7 +39,7 @@ namespace Minibank.Data.Users.Repositories
             var entity = _userStorage.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
-                return null;
+                throw new ObjectNotFoundException($"Пользователь id={id} не найден");
             }
 
             return new User
@@ -74,13 +74,7 @@ namespace Minibank.Data.Users.Repositories
 
         public bool Exists(string id)
         {
-            var entity = _userStorage.FirstOrDefault(it => it.Id == id);
-            if (entity == null)
-            {
-                return false;
-            }
-
-            return true;
+            return _userStorage.Any(it => it.Id == id);
         }
     }
 }

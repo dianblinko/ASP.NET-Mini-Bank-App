@@ -21,9 +21,9 @@ namespace Minibank.Core
             double fromValuteCourse = _ExchangeRateSource.GetValuteCourse(fromCurrency);
             double toValuteCourse = _ExchangeRateSource.GetValuteCourse(toCurrency);
 
-            double amountInRub = fromCurrency.ToString() == "RUB" ? amount :
+            double amountInRub = fromCurrency == CurrencyEnum.RUB ? amount :
                 amount * fromValuteCourse;
-            return toCurrency.ToString() == "RUB" ? amountInRub :
+            return toCurrency == CurrencyEnum.RUB ? amountInRub :
                 amountInRub / toValuteCourse;
         }
     }
