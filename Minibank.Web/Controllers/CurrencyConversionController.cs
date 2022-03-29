@@ -1,23 +1,24 @@
-﻿using Minibank.Core;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Minibank.Core;
+using Minibank.Core.Domains;
 
 namespace Minibank.Web.Controllers
 {
     [ApiController]
-    [Route(template:"[controller]")]
+    [Route(template: "[controller]")]
     public class CurrencyConversionController : ControllerBase
     {
-        private readonly ICurrencyСonversion _currencyConversion;
+        private readonly ICurrencyConversion _currencyConversion;
 
-        public CurrencyConversionController(ICurrencyСonversion currencyСonversion)
+        public CurrencyConversionController(ICurrencyConversion currencyСonversion)
         {
             _currencyConversion = currencyСonversion;
         }
 
         [HttpGet]
-        public int Get(int sum, string code)
+        public double Get(double amount, CurrencyEnum fromCurrnecy, CurrencyEnum toCurrency)
         {
-            return _currencyConversion.Converting(sum, code);
+            return _currencyConversion.Converting(amount, fromCurrnecy, toCurrency);
         }
     }
 }

@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace Minibank.Core
 {
-    public interface ICurrencyСonversion
+    public class ObjectNotFoundException : Exception
     {
-        int Converting(int sum, string code);
+        public ObjectNotFoundException(string? message) : base(message)
+        {
+        }
     }
 }

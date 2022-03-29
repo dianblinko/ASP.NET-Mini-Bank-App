@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Minibank.Core.Domains;
 
 namespace Minibank.Core
 {
     public interface IExchangeRateSource
     {
-        int Get(string code);
+        double GetValuteCourse(CurrencyEnum code);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
 using System;
+using System.Threading.Tasks;
+using Minibank.Core;
 
 namespace Minibank.Web.Middlewares
 {
@@ -18,6 +19,16 @@ namespace Minibank.Web.Middlewares
             try
             {
                 await next(httpContext);
+            }
+            catch (ObjectNotFoundException exception)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                await httpContext.Response.WriteAsJsonAsync(new { Message = exception.Message });
+            }
+            catch (ValidationException exception)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await httpContext.Response.WriteAsJsonAsync(new { Message = exception.Message });
             }
             catch (Exception exception)
             {
