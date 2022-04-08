@@ -4,6 +4,7 @@ using Minibank.Core.Domains.Users.Services;
 using Minibank.Web.Controllers.Users.Dto;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Minibank.Web.Controllers.Users
 {
@@ -19,9 +20,9 @@ namespace Minibank.Web.Controllers.Users
         }
 
         [HttpGet("{id}")]
-        public UserDto Get(string id)
+        public async Task<UserDto> Get(string id)
         {
-            var model = _userService.GetUser(id);
+            var model = await _userService.GetUser(id);
             return new UserDto
             {
                 Id = model.Id,
@@ -31,21 +32,21 @@ namespace Minibank.Web.Controllers.Users
         }
 
         [HttpGet]
-        public IEnumerable<UserDto> GetAll()
+        public async Task<List<UserDto>> GetAll()
         {
-            return _userService.GetAll()
+            return (await _userService.GetAll())
                 .Select(it => new UserDto
                 {
                     Id = it.Id,
                     Login = it.Login,
                     Email = it.Email
-                });
+                }).ToList();
         }
 
         [HttpPost]
-        public void Create(UserDtoCreate model)
+        public Task Create(UserDtoCreate model)
         {
-            _userService.Create(new User
+            return _userService.Create(new User
             {
                 Login = model.Login,
                 Email = model.Email
@@ -53,19 +54,20 @@ namespace Minibank.Web.Controllers.Users
         }
 
         [HttpPut("{id}")]
-        public void Update(string id, UserDtoCreate model)
+        public Task Update(string id, UserDtoCreate model)
         {
-            _userService.Update(new User
+            return _userService.Update(new User
             {
+                Id = id,
                 Login = model.Login,
                 Email = model.Email
             });
         }
 
         [HttpDelete("{id}")]
-        public void Delete(string id)
+        public Task Delete(string id)
         {
-            _userService.Delete(id);
+            return _userService.Delete(id);
         }
     }
 }

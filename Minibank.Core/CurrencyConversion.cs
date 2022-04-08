@@ -1,4 +1,5 @@
-﻿using Minibank.Core.Domains;
+﻿using System.Threading.Tasks;
+using Minibank.Core.Domains;
 
 namespace Minibank.Core
 {
@@ -11,15 +12,15 @@ namespace Minibank.Core
             _ExchangeRateSource = ExchangeRatesSourse;
         }
 
-        public double Converting(double amount, CurrencyEnum fromCurrency, CurrencyEnum toCurrency)
+        public async Task<double> Converting(double amount, CurrencyEnum fromCurrency, CurrencyEnum toCurrency)
         {
             if (amount < 0)
             {
                 throw new ValidationException("Отрицательная сумма");
             }
 
-            double fromValuteCourse = _ExchangeRateSource.GetValuteCourse(fromCurrency);
-            double toValuteCourse = _ExchangeRateSource.GetValuteCourse(toCurrency);
+            double fromValuteCourse = await _ExchangeRateSource.GetValuteCourse(fromCurrency);
+            double toValuteCourse = await _ExchangeRateSource.GetValuteCourse(toCurrency);
 
             double amountInRub = fromCurrency == CurrencyEnum.RUB ? amount :
                 amount * fromValuteCourse;

@@ -1,6 +1,7 @@
 ﻿using Minibank.Core.Domains.Accounts.Repositories;
 using Minibank.Core.Domains.Users.Repositories;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Minibank.Core.Domains.Users.Services
 {
@@ -18,37 +19,37 @@ namespace Minibank.Core.Domains.Users.Services
             _unitOfWork = unitOfWork;
         }
 
-        public void Create(User user)
+        public async Task Create(User user)
         {
-            _userRepository.Create(user);
-            _unitOfWork.SaveChanges();
+            await _userRepository.Create(user);
+            await _unitOfWork.SaveChanges();
         }
 
-        public void Delete(string id)
+        public async Task Delete(string id)
         {
-            if (_accountRepository.ExistForUserId(id))
+            if (await _accountRepository.ExistForUserId(id))
             {
                 throw new ValidationException("Нельзя удалить пользователя с привязанными аккаунтами");
             }
 
-            _userRepository.Delete(id);
-            _unitOfWork.SaveChanges();
+            await _userRepository.Delete(id);
+            await _unitOfWork.SaveChanges();
         }
 
-        public User GetUser(string id)
+        public Task<User> GetUser(string id)
         {
             return _userRepository.GetUser(id);
         }
 
-        public IEnumerable<User> GetAll()
+        public Task<List<User>> GetAll()
         {
             return _userRepository.GetAll();
         }
 
-        public void Update(User user)
+        public async Task Update(User user)
         {
-            _userRepository.Update(user);
-            _unitOfWork.SaveChanges();
+            await _userRepository.Update(user);
+            await _unitOfWork.SaveChanges();
         }
     }
 }

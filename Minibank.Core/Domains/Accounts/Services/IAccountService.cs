@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Minibank.Core.Domains.Accounts.Services
 {
     public interface IAccountService
     {
-        Account GetById(string id);
-        IEnumerable<Account> GetAll();
-        void Create(Account account);
-        void Delete(string id);
-        void Close(String id);
-        double CalculateCommission(double amount, string fromAccountId, string toAccountId);
-        void TransferMoney(double amount, string fromAccountId, string toAccountId);
+        Task<Account> GetById(string id);
+        Task<List<Account>> GetAll();
+        Task Create(Account account);
+        Task Delete(string id);
+        Task Close(String id);
+        Task<double> CalculateCommission(double amount, string fromAccountId, string toAccountId);
+        Task TransferMoney(double amount, string fromAccountId, string toAccountId);
     }
 }

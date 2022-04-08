@@ -5,6 +5,7 @@ using Minibank.Core.Domains.Accounts.Services;
 using Minibank.Web.Controllers.Accounts.Dto;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Minibank.Web.Controllers.Accounts
 {
@@ -20,15 +21,15 @@ namespace Minibank.Web.Controllers.Accounts
         }
 
         [HttpGet("{id}")]
-        public AccountDto GetUserAccounts(string id)
+        public async Task<AccountDto> GetUserAccount(string id)
         {
-            var model = _accountService.GetById(id);
+            var model = await _accountService.GetById(id);
 
             return new AccountDto
             {
                 Id = model.Id,
                 UserId = model.UserId,
-                AmoumtOnAccount = model.AmoumtOnAccount,
+                AmountOnAccount = model.AmountOnAccount,
                 Currency = model.Currency,
                 IsOpen = model.IsOpen,
                 OpeningDate = model.OpeningDate,
@@ -37,54 +38,54 @@ namespace Minibank.Web.Controllers.Accounts
         }
 
         [HttpGet]
-        public IEnumerable<AccountDto> GetAll()
+        public async Task<List<AccountDto>> GetAll()
         {
-            return _accountService.GetAll()
+            return (await _accountService.GetAll())
                 .Select(it => new AccountDto
                 {
                     Id = it.Id,
                     UserId = it.UserId,
-                    AmoumtOnAccount = it.AmoumtOnAccount,
+                    AmountOnAccount = it.AmountOnAccount,
                     Currency = it.Currency,
                     IsOpen = it.IsOpen,
                     OpeningDate = it.OpeningDate,
                     ClosingDate = it.ClosingDate
-                });
+                }).ToList();
         }
 
         [HttpPost]
-        public void Create(AccountDtoCreate model)
+        public Task Create(AccountDtoCreate model)
         {
-            _accountService.Create(new Account
+            return _accountService.Create(new Account
             {
                 UserId = model.UserId,
-                AmoumtOnAccount = model.AmoumtOnAccount,
+                AmountOnAccount = model.AmountOnAccount,
                 Currency = model.Currency
             });
         }
 
         [HttpPut("close/{id}")]
-        public void ToClose(string id)
+        public Task ToClose(string id)
         {
-            _accountService.Close(id);
+            return _accountService.Close(id);
         }
 
         [HttpDelete("{id}")]
-        public void Delete(string id)
-        {
-            _accountService.Delete(id);
+        public Task Delete(string id)
+        { 
+            return _accountService.Delete(id);
         }
 
         [HttpGet("calculateCommission")]
-        public double CalculateCommission(double amount, string fromAccountId, string toAccountId)
+        public Task<double> CalculateCommission(double amount, string fromAccountId, string toAccountId)
         {
             return _accountService.CalculateCommission(amount, fromAccountId, toAccountId);
         }
 
         [HttpPut("transferMoney")]
-        public void TransferMoney(double amount, string fromAccountId, string toAccountId)
+        public Task TransferMoney(double amount, string fromAccountId, string toAccountId)
         {
-            _accountService.TransferMoney(amount, fromAccountId, toAccountId);
+            return _accountService.TransferMoney(amount, fromAccountId, toAccountId);
         }
     }
 }

@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Minibank.Core.Domains.MoneyTransfers.Services
 {
     public interface IMoneyTransferService
     {
-        void Create(MoneyTransfer moneyTransfer);
+        Task Create(MoneyTransfer moneyTransfer);
     }
 }

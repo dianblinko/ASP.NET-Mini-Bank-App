@@ -1,4 +1,5 @@
-﻿using Minibank.Core;
+﻿using System.Threading.Tasks;
+using Minibank.Core;
 using Minibank.Data.Context;
 
 namespace Minibank.Data
@@ -12,9 +13,9 @@ namespace Minibank.Data
             _context = context;
         }
 
-        public int SaveChanges()
-        {
-            return _context.SaveChanges();
+        public Task<int> SaveChanges()
+        { 
+            return _context.SaveChangesAsync();
         }
     }
 }

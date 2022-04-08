@@ -4,7 +4,9 @@ using Minibank.Core.Domains.MoneyTransfers.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Minibank.Data.Context;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace Minibank.Data.MoneyTransfers.Repositories
@@ -17,7 +19,7 @@ namespace Minibank.Data.MoneyTransfers.Repositories
         {
             _context = context;
         }
-        public void Create(MoneyTransfer moneyTransfer)
+        public async Task Create(MoneyTransfer moneyTransfer)
         {
             var entity = new MoneyTransferDbModel
             {
@@ -27,7 +29,7 @@ namespace Minibank.Data.MoneyTransfers.Repositories
                 FromAccountId = moneyTransfer.FromAccountId,
                 ToAccountId = moneyTransfer.ToAccountId
             };
-            _context.MoneyTransfer.Add(entity);
+            await _context.MoneyTransfer.AddAsync(entity);
         }
     }
 }

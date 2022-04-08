@@ -1,9 +1,10 @@
-﻿using Minibank.Core.Domains;
+﻿using System.Threading.Tasks;
+using Minibank.Core.Domains;
 
 namespace Minibank.Core
 {
     public interface ICurrencyConversion
     {
-        double Converting(double amount, CurrencyEnum fromCurrency, CurrencyEnum toCurrency);
+        Task<double> Converting(double amount, CurrencyEnum fromCurrency, CurrencyEnum toCurrency);
     }
 }

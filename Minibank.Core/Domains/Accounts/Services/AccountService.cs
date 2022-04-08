@@ -4,6 +4,7 @@ using Minibank.Core.Domains.MoneyTransfers.Repositories;
 using Minibank.Core.Domains.Users.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Minibank.Core.Domains.Accounts.Services
 {
@@ -26,9 +27,9 @@ namespace Minibank.Core.Domains.Accounts.Services
             _unitOfWork = unitOfWork;
         }
 
-        public void Create(Account account)
+        public async Task Create(Account account)
         {
-            if (!_userRepository.Exists(account.UserId))
+            if (!await _userRepository.Exists(account.UserId))
             {
                 throw new ObjectNotFoundException($"Пользователь id={account.UserId} не найден");
             }
@@ -37,42 +38,44 @@ namespace Minibank.Core.Domains.Accounts.Services
                 throw new ValidationException("Задана недопустюмая валюта счета");
             }
 
-            _accountRepository.Create(account);
-            _unitOfWork.SaveChanges();
+            await _accountRepository.Create(account);
+            await _unitOfWork.SaveChanges();
         }
 
-        public void Delete(string id)
+        public async Task Delete(string id)
         {
-            _accountRepository.Delete(id);
-            _unitOfWork.SaveChanges();
+            await _accountRepository.Delete(id);
+            await _unitOfWork.SaveChanges();
         }
 
-        public Account GetById(string id)
+        public Task<Account> GetById(string id)
         {
             return _accountRepository.GetById(id);
         }
 
-        public IEnumerable<Account> GetAll()
+        public Task<List<Account>> GetAll()
         {
             return _accountRepository.GetAll();
         }
 
-        public void Close(string id)
+        public async Task Close(string id)
         {
-            Account account = _accountRepository.GetById(id);
-            if (account.AmoumtOnAccount != 0)
+            var account = await _accountRepository.GetById(id);
+            if (account.AmountOnAccount != 0)
             {
                 throw new ValidationException("Нельзя закрыть аккаунт с деньгами на нем");
             }
 
-            _accountRepository.CloseAccount(id);
-            _unitOfWork.SaveChanges();
+            await _accountRepository.CloseAccount(id);
+            await _unitOfWork.SaveChanges();
         }
 
-        public double CalculateCommission(double amount, string fromAccountId, string toAccountId)
+        public async Task<double> CalculateCommission(double amount, string fromAccountId, string toAccountId)
         {
-            var fromAccountUserId = _accountRepository.GetById(fromAccountId).UserId;
-            var toAccountUserId = _accountRepository.GetById(toAccountId).UserId;
+            var fromAccountUserId = (await _accountRepository.GetById(fromAccountId))
+                .UserId;
+            var toAccountUserId = (await _accountRepository.GetById(toAccountId))
+                .UserId;
             if (fromAccountUserId == toAccountUserId)
             {
                 return 0.0;
@@ -82,10 +85,10 @@ namespace Minibank.Core.Domains.Accounts.Services
             return Math.Round(commission, 2);
         }
 
-        public void TransferMoney(double amount, string fromAccountId, string toAccountId)
+        public async Task TransferMoney(double amount, string fromAccountId, string toAccountId)
         {
-            Account fromAccount = _accountRepository.GetById(fromAccountId);
-            Account toAccount = _accountRepository.GetById(toAccountId);
+            Account fromAccount = await _accountRepository.GetById(fromAccountId);
+            Account toAccount = await _accountRepository.GetById(toAccountId);
             if (amount <= 0)
             {
                 throw new ValidationException("Неправильна введена сумма перевода");
@@ -98,36 +101,36 @@ namespace Minibank.Core.Domains.Accounts.Services
             {
                 throw new ValidationException("Аккаунт получателя закрыт");
             }
-            if (fromAccount.AmoumtOnAccount < amount)
+            if (fromAccount.AmountOnAccount < amount)
             {
                 throw new ValidationException("Недостаточно средств");
             }
 
             var fromAccountCurrency = fromAccount.Currency; 
             var toAccountCurrency = toAccount.Currency;
-            double resultAmount = amount - CalculateCommission(amount, fromAccountId, toAccountId);
+            double resultAmount = amount - await CalculateCommission(amount, fromAccountId, toAccountId);
 
             if (fromAccountCurrency != toAccountCurrency)
             {
-                resultAmount = _currencyConversion.Converting(resultAmount, fromAccountCurrency, toAccountCurrency);
+                resultAmount = await _currencyConversion.Converting(resultAmount, fromAccountCurrency, toAccountCurrency);
             }
 
             resultAmount = Math.Round(resultAmount, 2);
 
-            fromAccount.AmoumtOnAccount -= amount;
-            _accountRepository.Update(fromAccount);
+            fromAccount.AmountOnAccount -= amount;
+            await _accountRepository.Update(fromAccount);
 
-            toAccount.AmoumtOnAccount += resultAmount;
-            _accountRepository.Update(toAccount);
+            toAccount.AmountOnAccount += resultAmount;
+            await _accountRepository.Update(toAccount);
 
-            _moneyTransferRepository.Create(new MoneyTransfer
+            await _moneyTransferRepository.Create(new MoneyTransfer
             {
                 Amount = resultAmount,
                 Currency = toAccountCurrency,
                 FromAccountId = fromAccountId,
                 ToAccountId = toAccountId
             });
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChanges();
         }
     }
 }

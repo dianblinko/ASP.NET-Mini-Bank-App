@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Minibank.Core.Domains.Accounts.Repositories
 {
     public interface IAccountRepository
     {
-        Account GetById(string id);
-        IEnumerable<Account> GetAll();
-        void Create(Account account);
-        void Update(Account account);
-        void Delete(string id);
-        bool ExistForUserId(string userId);
-        void CloseAccount(string id);
-        void SubAmount(string id, double amount);
-        void AddAmount(string id, double amount);
-        bool Exists(string id);
+        Task<Account> GetById(string id);
+        Task<List<Account>> GetAll();
+        Task Create(Account account);
+        Task Update(Account account);
+        Task Delete(string id);
+        Task<bool> ExistForUserId(string userId);
+        Task CloseAccount(string id);
+        Task<bool> Exists(string id);
     }
 }

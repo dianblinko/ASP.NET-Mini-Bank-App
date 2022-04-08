@@ -1,5 +1,6 @@
 ﻿using Minibank.Core.Domains.MoneyTransfers.Repositories;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Minibank.Core.Domains.MoneyTransfers.Services
 {
@@ -15,10 +16,10 @@ namespace Minibank.Core.Domains.MoneyTransfers.Services
             _unitOfWork = unitOfWork;
         }
 
-        public void Create(MoneyTransfer moneyTransfer)
+        public async Task Create(MoneyTransfer moneyTransfer)
         {
-            _moneyTransferRepository.Create(moneyTransfer);
-            _unitOfWork.SaveChanges();
+            await _moneyTransferRepository.Create(moneyTransfer);
+            await _unitOfWork.SaveChanges();
         }
     }
 }

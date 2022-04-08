@@ -396,3 +396,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/.idea/.idea.Minibank/.idea/vcs.xml
+/.idea/.idea.Minibank/.idea/indexLayout.xml
+/.idea/.idea.Minibank/.idea/dataSources.xml
+/.idea/.idea.Minibank/.idea/.name
+*.xml
