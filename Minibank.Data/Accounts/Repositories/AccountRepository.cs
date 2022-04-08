@@ -3,17 +3,25 @@ using Minibank.Core.Domains.Accounts;
 using Minibank.Core.Domains.Accounts.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using Minibank.Data.Context;
 
 namespace Minibank.Data.Accounts.Repositories
 {
     public class AccountRepository : IAccountRepository
     {
-        private static List<AccountDbModel> _accountStorage = new List<AccountDbModel>();
+        private readonly MinibankContext _context;
 
+        public AccountRepository(MinibankContext context)
+        {
+            _context = context;
+        }
         public Account GetById(string id)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
+            var entity = _context.Accounts
+                .AsNoTracking()
+                .FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
@@ -33,7 +41,9 @@ namespace Minibank.Data.Accounts.Repositories
 
         public IEnumerable<Account> GetAll()
         {
-            return _accountStorage.Select(it => new Account()
+            return _context.Accounts
+                .AsNoTracking()
+                .Select(it => new Account()
             {
                 Id = it.Id,
                 UserId = it.UserId,
@@ -57,11 +67,11 @@ namespace Minibank.Data.Accounts.Repositories
                 OpeningDate = DateTime.Now,
                 ClosingDate = null
             };
-            _accountStorage.Add(entity);
+            _context.Accounts.Add(entity);
         }
         public void Update(Account account)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == account.Id);
+            var entity = _context.Accounts.FirstOrDefault(it => it.Id == account.Id);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={account.Id} не найден");
@@ -77,30 +87,30 @@ namespace Minibank.Data.Accounts.Repositories
 
         public void Delete(string id)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
+            var entity = _context.Accounts.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
             }
 
-            _accountStorage.Remove(entity);
+            _context.Accounts.Remove(entity);
         }
 
         public bool ExistForUserId(string userId)
         {
-            return _accountStorage.Any(it => it.UserId == userId);
+            return _context.Accounts.Any(it => it.UserId == userId);
         }
 
         public void CloseAccount(string id)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
+            var entity = _context.Accounts.FirstOrDefault(it => it.Id == id);
             entity.IsOpen = false;
             entity.ClosingDate = DateTime.Now;
         }
 
         public void SubAmount(string id, double amount)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
+            var entity = _context.Accounts.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
@@ -111,7 +121,7 @@ namespace Minibank.Data.Accounts.Repositories
 
         public void AddAmount(string id, double amount)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
+            var entity = _context.Accounts.FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
@@ -122,7 +132,9 @@ namespace Minibank.Data.Accounts.Repositories
 
         public bool Exists(string id)
         {
-            return _accountStorage.Any(it =>it.Id == id);
+            return _context.Accounts
+                .AsNoTracking()
+                .Any(it =>it.Id == id);
         }
     }
 }

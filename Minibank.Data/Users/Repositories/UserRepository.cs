@@ -3,13 +3,20 @@ using Minibank.Core.Domains.Users;
 using Minibank.Core.Domains.Users.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using Minibank.Data.Context;
 
 namespace Minibank.Data.Users.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private static List<UserDbModel> _userStorage = new List<UserDbModel>();
+        private readonly MinibankContext _context;
+
+        public UserRepository(MinibankContext context)
+        {
+            _context = context;
+        }
 
         public void Create(User user)
         {
@@ -20,23 +27,26 @@ namespace Minibank.Data.Users.Repositories
                 Email = user.Email
             };
 
-            _userStorage.Add(entity);
+            _context.Users.Add(entity);
         }
 
         public void Delete(string id)
         {
-            var entity = _userStorage.FirstOrDefault(it => it.Id == id);
-            if (entity != null)
+            var entity = _context.Users.FirstOrDefault(it => it.Id == id);
+            
+            if (entity == null)
             {
                 throw new ObjectNotFoundException($"Пользователь id={id} не найден");
             }
 
-            _userStorage.Remove(entity);
+            _context.Users.Remove(entity);
         }
 
         public User GetUser(string id)
         {
-            var entity = _userStorage.FirstOrDefault(it => it.Id == id);
+            var entity = _context.Users
+                .AsNoTracking()
+                .FirstOrDefault(it => it.Id == id);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Пользователь id={id} не найден");
@@ -52,17 +62,19 @@ namespace Minibank.Data.Users.Repositories
 
         public IEnumerable<User> GetAll()
         {
-            return _userStorage.Select(it => new User()
-            {
-                Id = it.Id,
-                Login = it.Login,
-                Email = it.Email
-            });
+            return _context.Users
+                .AsNoTracking()
+                .Select(it => new User()
+                {
+                    Id = it.Id,
+                    Login = it.Login,
+                    Email = it.Email
+                });
         }
 
         public void Update(User user)
         {
-            var entity = _userStorage.FirstOrDefault(it => it.Id == user.Id);
+            var entity = _context.Users.FirstOrDefault(it => it.Id == user.Id);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Пользователь id={user.Id} не найден");
@@ -74,7 +86,9 @@ namespace Minibank.Data.Users.Repositories
 
         public bool Exists(string id)
         {
-            return _userStorage.Any(it => it.Id == id);
+            return _context.Users
+                .AsNoTracking()
+                .Any(it => it.Id == id);
         }
     }
 }

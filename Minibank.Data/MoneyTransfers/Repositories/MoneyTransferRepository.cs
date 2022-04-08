@@ -4,13 +4,19 @@ using Minibank.Core.Domains.MoneyTransfers.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Minibank.Data.Context;
 
 
 namespace Minibank.Data.MoneyTransfers.Repositories
 {
     public class MoneyTransferRepository : IMoneyTransferRepository
     {
-        private static List<MoneyTransferDbModel> moneyTransferStorage = new List<MoneyTransferDbModel>();
+        private readonly MinibankContext _context;
+
+        public MoneyTransferRepository(MinibankContext context)
+        {
+            _context = context;
+        }
         public void Create(MoneyTransfer moneyTransfer)
         {
             var entity = new MoneyTransferDbModel
@@ -21,7 +27,7 @@ namespace Minibank.Data.MoneyTransfers.Repositories
                 FromAccountId = moneyTransfer.FromAccountId,
                 ToAccountId = moneyTransfer.ToAccountId
             };
-            moneyTransferStorage.Add(entity);
+            _context.MoneyTransfer.Add(entity);
         }
     }
 }

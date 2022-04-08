@@ -8,16 +8,20 @@ namespace Minibank.Core.Domains.Users.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UserService(IUserRepository userRepository, IAccountRepository accountRepository)
+        public UserService(IUserRepository userRepository, 
+            IAccountRepository accountRepository, IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _accountRepository = accountRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public void Create(User user)
         {
             _userRepository.Create(user);
+            _unitOfWork.SaveChanges();
         }
 
         public void Delete(string id)
@@ -28,6 +32,7 @@ namespace Minibank.Core.Domains.Users.Services
             }
 
             _userRepository.Delete(id);
+            _unitOfWork.SaveChanges();
         }
 
         public User GetUser(string id)
@@ -43,6 +48,7 @@ namespace Minibank.Core.Domains.Users.Services
         public void Update(User user)
         {
             _userRepository.Update(user);
+            _unitOfWork.SaveChanges();
         }
     }
 }

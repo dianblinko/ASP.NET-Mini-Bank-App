@@ -19,11 +19,15 @@ namespace Minibank.Data.HttpClients.Models
             var response = _httpClient.GetFromJsonAsync<CourseResponse>("daily_json.js")
                 .GetAwaiter().GetResult();
 
+            if (code == CurrencyEnum.RUB)
+            {
+                return 1.0;
+            }
             if (!response.Valute.ContainsKey(code.ToString()))
             {
                 throw new ValidationException("Неправильный код валюты");
             }
-
+            
             return (double)response.Valute[code.ToString()].Value;
         }
     }

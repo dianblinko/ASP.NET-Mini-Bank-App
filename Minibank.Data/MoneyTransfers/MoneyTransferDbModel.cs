@@ -1,4 +1,7 @@
 ﻿using Minibank.Core.Domains;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Minibank.Data.MoneyTransfers
 {
@@ -9,5 +12,13 @@ namespace Minibank.Data.MoneyTransfers
         public CurrencyEnum Currency { get; set; }
         public string FromAccountId { get; set; }
         public string ToAccountId { get; set; }
+    }
+
+    internal class Map : IEntityTypeConfiguration<MoneyTransferDbModel>
+    {
+        public void Configure(EntityTypeBuilder<MoneyTransferDbModel> builder)
+        {
+            builder.ToTable("money_transfer");
+        }
     }
 }

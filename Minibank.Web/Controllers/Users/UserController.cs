@@ -53,11 +53,10 @@ namespace Minibank.Web.Controllers.Users
         }
 
         [HttpPut("{id}")]
-        public void Update(string id, UserDto model)
+        public void Update(string id, UserDtoCreate model)
         {
             _userService.Update(new User
             {
-                Id = id,
                 Login = model.Login,
                 Email = model.Email
             });

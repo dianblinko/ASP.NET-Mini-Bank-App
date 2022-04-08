@@ -13,14 +13,17 @@ namespace Minibank.Core.Domains.Accounts.Services
         private readonly IUserRepository _userRepository;
         private readonly ICurrencyConversion _currencyConversion;
         private readonly IMoneyTransferRepository _moneyTransferRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public AccountService(IAccountRepository accountRepository, ICurrencyConversion currencyConversion, 
-            IMoneyTransferRepository moneyTransferRepository, IUserRepository userRepository)
+            IMoneyTransferRepository moneyTransferRepository, IUserRepository userRepository,
+            IUnitOfWork unitOfWork)
         {
             _accountRepository = accountRepository;
             _currencyConversion = currencyConversion;
             _moneyTransferRepository = moneyTransferRepository;
             _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public void Create(Account account)
@@ -35,11 +38,13 @@ namespace Minibank.Core.Domains.Accounts.Services
             }
 
             _accountRepository.Create(account);
+            _unitOfWork.SaveChanges();
         }
 
         public void Delete(string id)
         {
             _accountRepository.Delete(id);
+            _unitOfWork.SaveChanges();
         }
 
         public Account GetById(string id)
@@ -61,6 +66,7 @@ namespace Minibank.Core.Domains.Accounts.Services
             }
 
             _accountRepository.CloseAccount(id);
+            _unitOfWork.SaveChanges();
         }
 
         public double CalculateCommission(double amount, string fromAccountId, string toAccountId)
@@ -103,7 +109,7 @@ namespace Minibank.Core.Domains.Accounts.Services
 
             if (fromAccountCurrency != toAccountCurrency)
             {
-                resultAmount = _currencyConversion.Converting(amount, fromAccountCurrency, toAccountCurrency);
+                resultAmount = _currencyConversion.Converting(resultAmount, fromAccountCurrency, toAccountCurrency);
             }
 
             resultAmount = Math.Round(resultAmount, 2);
@@ -121,6 +127,7 @@ namespace Minibank.Core.Domains.Accounts.Services
                 FromAccountId = fromAccountId,
                 ToAccountId = toAccountId
             });
+            _unitOfWork.SaveChanges();
         }
     }
 }
