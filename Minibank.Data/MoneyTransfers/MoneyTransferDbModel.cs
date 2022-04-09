@@ -1,5 +1,4 @@
 ﻿using Minibank.Core.Domains;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

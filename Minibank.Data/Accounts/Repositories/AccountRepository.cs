@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Minibank.Data.Context;
 
@@ -18,11 +19,11 @@ namespace Minibank.Data.Accounts.Repositories
         {
             _context = context;
         }
-        public async Task<Account> GetById(string id)
+        public async Task<Account> GetById(string id, CancellationToken cancellationToken)
         {
             var entity = await _context.Accounts
                 .AsNoTracking()
-                .FirstOrDefaultAsync(it => it.Id == id);
+                .FirstOrDefaultAsync(it => it.Id == id, cancellationToken: cancellationToken);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
@@ -40,7 +41,7 @@ namespace Minibank.Data.Accounts.Repositories
             };
         }
 
-        public Task<List<Account>> GetAll()
+        public Task<List<Account>> GetAll(CancellationToken cancellationToken)
         {
             return _context.Accounts
                 .AsNoTracking()
@@ -53,10 +54,10 @@ namespace Minibank.Data.Accounts.Repositories
                 IsOpen = it.IsOpen,
                 OpeningDate = it.OpeningDate,
                 ClosingDate = it.ClosingDate
-            }).ToListAsync();
+            }).ToListAsync(cancellationToken: cancellationToken);
         }
 
-        public async Task Create(Account account)
+        public async Task Create(Account account, CancellationToken cancellationToken)
         {
             var entity = new AccountDbModel
             {
@@ -68,11 +69,12 @@ namespace Minibank.Data.Accounts.Repositories
                 OpeningDate = DateTime.Now,
                 ClosingDate = null
             };
-            await _context.Accounts.AddAsync(entity);
+            await _context.Accounts.AddAsync(entity, cancellationToken);
         }
-        public async Task Update(Account account)
+        public async Task Update(Account account, CancellationToken cancellationToken)
         {
-            var entity = await _context.Accounts.FirstOrDefaultAsync(it => it.Id == account.Id);
+            var entity = await _context.Accounts
+                .FirstOrDefaultAsync(it => it.Id == account.Id, cancellationToken: cancellationToken);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={account.Id} не найден");
@@ -86,9 +88,10 @@ namespace Minibank.Data.Accounts.Repositories
             entity.OpeningDate = account.OpeningDate;
         }
 
-        public async Task Delete(string id)
+        public async Task Delete(string id, CancellationToken cancellationToken)
         {
-            var entity = await _context.Accounts.FirstOrDefaultAsync(it => it.Id == id);
+            var entity = await _context.Accounts
+                .FirstOrDefaultAsync(it => it.Id == id, cancellationToken: cancellationToken);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
@@ -97,23 +100,25 @@ namespace Minibank.Data.Accounts.Repositories
             _context.Accounts.Remove(entity);
         }
 
-        public Task<bool> ExistForUserId(string userId)
+        public Task<bool> ExistForUserId(string userId, CancellationToken cancellationToken)
         {
-            return _context.Accounts.AnyAsync(it => it.UserId == userId);
+            return _context.Accounts
+                .AnyAsync(it => it.UserId == userId, cancellationToken: cancellationToken);
         }
 
-        public async Task CloseAccount(string id)
+        public async Task CloseAccount(string id, CancellationToken cancellationToken)
         {
-            var entity = await _context.Accounts.FirstOrDefaultAsync(it => it.Id == id);
+            var entity = await _context.Accounts
+                .FirstOrDefaultAsync(it => it.Id == id, cancellationToken: cancellationToken);
             entity.IsOpen = false;
             entity.ClosingDate = DateTime.Now;
         }
 
-        public Task<bool> Exists(string id)
+        public Task<bool> Exists(string id, CancellationToken cancellationToken)
         {
             return _context.Accounts
                 .AsNoTracking()
-                .AnyAsync(it =>it.Id == id);
+                .AnyAsync(it =>it.Id == id, cancellationToken: cancellationToken);
         }
     }
 }

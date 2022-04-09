@@ -2,7 +2,6 @@
 using Minibank.Core.Domains;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.ComponentModel.DataAnnotations.Schema;
 using Minibank.Data.Users;
 
 namespace Minibank.Data.Accounts
@@ -24,9 +23,6 @@ namespace Minibank.Data.Accounts
         public void Configure(EntityTypeBuilder<AccountDbModel> builder)
         {
             builder.ToTable("account");
-            /*builder.HasOne(it => it.User)
-                .WithMany(it => it.)
-                //на 1:30 было*/
         }
     }
 }

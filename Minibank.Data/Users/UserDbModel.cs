@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.ComponentModel.DataAnnotations.Schema;
-using Minibank.Data.Accounts;
 
 namespace Minibank.Data.Users
 {

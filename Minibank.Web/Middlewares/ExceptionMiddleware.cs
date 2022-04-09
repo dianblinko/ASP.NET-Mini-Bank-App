@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Minibank.Core;
 
@@ -24,6 +25,12 @@ namespace Minibank.Web.Middlewares
             {
                 httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
                 await httpContext.Response.WriteAsJsonAsync(new { Message = exception.Message });
+            }
+            catch (FluentValidation.ValidationException exception)
+            {
+                var errors = exception.Errors.Select(x => $"{x.ErrorMessage}");
+                var errorMessage = string.Join(Environment.NewLine, errors);
+                await httpContext.Response.WriteAsJsonAsync(new { Message = errorMessage });
             }
             catch (ValidationException exception)
             {

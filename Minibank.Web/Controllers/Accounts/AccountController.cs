@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Minibank.Core.Domains; 
 using Minibank.Core.Domains.Accounts;
 using Minibank.Core.Domains.Accounts.Services;
 using Minibank.Web.Controllers.Accounts.Dto;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Minibank.Web.Controllers.Accounts
@@ -21,9 +21,9 @@ namespace Minibank.Web.Controllers.Accounts
         }
 
         [HttpGet("{id}")]
-        public async Task<AccountDto> GetUserAccount(string id)
+        public async Task<AccountDto> GetUserAccount(string id, CancellationToken cancellationToken)
         {
-            var model = await _accountService.GetById(id);
+            var model = await _accountService.GetById(id, cancellationToken);
 
             return new AccountDto
             {
@@ -38,9 +38,9 @@ namespace Minibank.Web.Controllers.Accounts
         }
 
         [HttpGet]
-        public async Task<List<AccountDto>> GetAll()
+        public async Task<List<AccountDto>> GetAll(CancellationToken cancellationToken)
         {
-            return (await _accountService.GetAll())
+            return (await _accountService.GetAll(cancellationToken))
                 .Select(it => new AccountDto
                 {
                     Id = it.Id,
@@ -54,38 +54,40 @@ namespace Minibank.Web.Controllers.Accounts
         }
 
         [HttpPost]
-        public Task Create(AccountDtoCreate model)
+        public Task Create(AccountDtoCreate model, CancellationToken cancellationToken)
         {
             return _accountService.Create(new Account
             {
                 UserId = model.UserId,
                 AmountOnAccount = model.AmountOnAccount,
                 Currency = model.Currency
-            });
+            }, cancellationToken);
         }
 
         [HttpPut("close/{id}")]
-        public Task ToClose(string id)
+        public Task ToClose(string id, CancellationToken cancellationToken)
         {
-            return _accountService.Close(id);
+            return _accountService.Close(id,cancellationToken);
         }
 
         [HttpDelete("{id}")]
-        public Task Delete(string id)
+        public Task Delete(string id, CancellationToken cancellationToken)
         { 
-            return _accountService.Delete(id);
+            return _accountService.Delete(id, cancellationToken);
         }
 
         [HttpGet("calculateCommission")]
-        public Task<double> CalculateCommission(double amount, string fromAccountId, string toAccountId)
+        public Task<double> CalculateCommission(double amount, string fromAccountId, string toAccountId, 
+            CancellationToken cancellationToken)
         {
-            return _accountService.CalculateCommission(amount, fromAccountId, toAccountId);
+            return _accountService.CalculateCommission(amount, fromAccountId, toAccountId, cancellationToken);
         }
 
         [HttpPut("transferMoney")]
-        public Task TransferMoney(double amount, string fromAccountId, string toAccountId)
+        public Task TransferMoney(double amount, string fromAccountId, string toAccountId, 
+            CancellationToken cancellationToken)
         {
-            return _accountService.TransferMoney(amount, fromAccountId, toAccountId);
+            return _accountService.TransferMoney(amount, fromAccountId, toAccountId, cancellationToken);
         }
     }
 }

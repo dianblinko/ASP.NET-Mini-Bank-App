@@ -1,6 +1,7 @@
 ﻿using Minibank.Core.Domains.Accounts.Repositories;
 using Minibank.Core.Domains.Users.Repositories;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Minibank.Core.Domains.Users.Services
@@ -19,36 +20,36 @@ namespace Minibank.Core.Domains.Users.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task Create(User user)
+        public async Task Create(User user, CancellationToken cancellationToken)
         {
-            await _userRepository.Create(user);
+            await _userRepository.Create(user, cancellationToken);
             await _unitOfWork.SaveChanges();
         }
 
-        public async Task Delete(string id)
+        public async Task Delete(string id, CancellationToken cancellationToken)
         {
-            if (await _accountRepository.ExistForUserId(id))
+            if (await _accountRepository.ExistForUserId(id, cancellationToken))
             {
                 throw new ValidationException("Нельзя удалить пользователя с привязанными аккаунтами");
             }
 
-            await _userRepository.Delete(id);
+            await _userRepository.Delete(id, cancellationToken);
             await _unitOfWork.SaveChanges();
         }
 
-        public Task<User> GetUser(string id)
+        public Task<User> GetUser(string id, CancellationToken cancellationToken)
         {
-            return _userRepository.GetUser(id);
+            return _userRepository.GetUser(id, cancellationToken);
         }
 
-        public Task<List<User>> GetAll()
+        public Task<List<User>> GetAll(CancellationToken cancellationToken)
         {
-            return _userRepository.GetAll();
+            return _userRepository.GetAll(cancellationToken);
         }
 
-        public async Task Update(User user)
+        public async Task Update(User user, CancellationToken cancellationToken)
         {
-            await _userRepository.Update(user);
+            await _userRepository.Update(user, cancellationToken);
             await _unitOfWork.SaveChanges();
         }
     }
