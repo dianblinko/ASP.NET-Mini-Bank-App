@@ -66,6 +66,7 @@ namespace Minibank.Core.Domains.Accounts.Services
         {
             var account = await _accountRepository.GetById(id, cancellationToken);
             await _closeAccountValidator.ValidateAndThrowAsync(account, cancellationToken);
+            
             await _accountRepository.CloseAccount(id, cancellationToken);
             await _unitOfWork.SaveChanges();
         }
@@ -73,11 +74,10 @@ namespace Minibank.Core.Domains.Accounts.Services
         public async Task<double> CalculateCommission(double amount, string fromAccountId, string toAccountId, 
             CancellationToken cancellationToken)
         {
-            var fromAccountUserId = (await _accountRepository.GetById(fromAccountId, cancellationToken))
-                .UserId;
-            var toAccountUserId = (await _accountRepository.GetById(toAccountId, cancellationToken))
-                .UserId;
-            if (fromAccountUserId == toAccountUserId)
+            var fromAccountUser = await _accountRepository.GetById(fromAccountId, cancellationToken);
+            var toAccountUser = await _accountRepository.GetById(toAccountId, cancellationToken);
+            
+            if (fromAccountUser.UserId == toAccountUser.UserId)
             {
                 return 0.0;
             }
@@ -91,6 +91,7 @@ namespace Minibank.Core.Domains.Accounts.Services
         {
             Account fromAccount = await _accountRepository.GetById(fromAccountId, cancellationToken);
             Account toAccount = await _accountRepository.GetById(toAccountId, cancellationToken);
+            
             if (amount <= 0)
             {
                 throw new ValidationException("Неправильна введена сумма перевода");
