@@ -4,6 +4,9 @@ using Minibank.Core.Domains.MoneyTransfers.Repositories;
 using Minibank.Core.Domains.Users.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentValidation;
 
 namespace Minibank.Core.Domains.Accounts.Services
 {
@@ -13,19 +16,24 @@ namespace Minibank.Core.Domains.Accounts.Services
         private readonly IUserRepository _userRepository;
         private readonly ICurrencyConversion _currencyConversion;
         private readonly IMoneyTransferRepository _moneyTransferRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IValidator<Account> _closeAccountValidator;
 
         public AccountService(IAccountRepository accountRepository, ICurrencyConversion currencyConversion, 
-            IMoneyTransferRepository moneyTransferRepository, IUserRepository userRepository)
+            IMoneyTransferRepository moneyTransferRepository, IUserRepository userRepository,
+            IUnitOfWork unitOfWork, IValidator<Account> closeAccountValidator)
         {
             _accountRepository = accountRepository;
             _currencyConversion = currencyConversion;
             _moneyTransferRepository = moneyTransferRepository;
             _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
+            _closeAccountValidator = closeAccountValidator;
         }
 
-        public void Create(Account account)
+        public async Task Create(Account account, CancellationToken cancellationToken)
         {
-            if (!_userRepository.Exists(account.UserId))
+            if (!await _userRepository.Exists(account.UserId, cancellationToken))
             {
                 throw new ObjectNotFoundException($"Пользователь id={account.UserId} не найден");
             }
@@ -34,40 +42,42 @@ namespace Minibank.Core.Domains.Accounts.Services
                 throw new ValidationException("Задана недопустюмая валюта счета");
             }
 
-            _accountRepository.Create(account);
+            await _accountRepository.Create(account, cancellationToken);
+            await _unitOfWork.SaveChanges();
         }
 
-        public void Delete(string id)
+        public async Task Delete(string id, CancellationToken cancellationToken)
         {
-            _accountRepository.Delete(id);
+            await _accountRepository.Delete(id, cancellationToken);
+            await _unitOfWork.SaveChanges();
         }
 
-        public Account GetById(string id)
+        public Task<Account> GetById(string id, CancellationToken cancellationToken)
         {
-            return _accountRepository.GetById(id);
+            return _accountRepository.GetById(id, cancellationToken);
         }
 
-        public IEnumerable<Account> GetAll()
+        public Task<List<Account>> GetAll(CancellationToken cancellationToken)
         {
-            return _accountRepository.GetAll();
+            return _accountRepository.GetAll(cancellationToken);
         }
 
-        public void Close(string id)
+        public async Task Close(string id, CancellationToken cancellationToken)
         {
-            Account account = _accountRepository.GetById(id);
-            if (account.AmoumtOnAccount != 0)
-            {
-                throw new ValidationException("Нельзя закрыть аккаунт с деньгами на нем");
-            }
-
-            _accountRepository.CloseAccount(id);
+            var account = await _accountRepository.GetById(id, cancellationToken);
+            await _closeAccountValidator.ValidateAndThrowAsync(account, cancellationToken);
+            
+            await _accountRepository.CloseAccount(id, cancellationToken);
+            await _unitOfWork.SaveChanges();
         }
 
-        public double CalculateCommission(double amount, string fromAccountId, string toAccountId)
+        public async Task<double> CalculateCommission(double amount, string fromAccountId, string toAccountId, 
+            CancellationToken cancellationToken)
         {
-            var fromAccountUserId = _accountRepository.GetById(fromAccountId).UserId;
-            var toAccountUserId = _accountRepository.GetById(toAccountId).UserId;
-            if (fromAccountUserId == toAccountUserId)
+            var fromAccountUser = await _accountRepository.GetById(fromAccountId, cancellationToken);
+            var toAccountUser = await _accountRepository.GetById(toAccountId, cancellationToken);
+            
+            if (fromAccountUser.UserId == toAccountUser.UserId)
             {
                 return 0.0;
             }
@@ -76,10 +86,12 @@ namespace Minibank.Core.Domains.Accounts.Services
             return Math.Round(commission, 2);
         }
 
-        public void TransferMoney(double amount, string fromAccountId, string toAccountId)
+        public async Task TransferMoney(double amount, string fromAccountId, string toAccountId, 
+            CancellationToken cancellationToken)
         {
-            Account fromAccount = _accountRepository.GetById(fromAccountId);
-            Account toAccount = _accountRepository.GetById(toAccountId);
+            Account fromAccount = await _accountRepository.GetById(fromAccountId, cancellationToken);
+            Account toAccount = await _accountRepository.GetById(toAccountId, cancellationToken);
+            
             if (amount <= 0)
             {
                 throw new ValidationException("Неправильна введена сумма перевода");
@@ -92,35 +104,36 @@ namespace Minibank.Core.Domains.Accounts.Services
             {
                 throw new ValidationException("Аккаунт получателя закрыт");
             }
-            if (fromAccount.AmoumtOnAccount < amount)
+            if (fromAccount.AmountOnAccount < amount)
             {
-                throw new ValidationException("Недостаточно средств");
+                throw new ValidationException("Недостаточно средства");
             }
-
+            
             var fromAccountCurrency = fromAccount.Currency; 
             var toAccountCurrency = toAccount.Currency;
-            double resultAmount = amount - CalculateCommission(amount, fromAccountId, toAccountId);
+            double resultAmount = amount - await CalculateCommission(amount, fromAccountId, toAccountId, cancellationToken);
 
             if (fromAccountCurrency != toAccountCurrency)
             {
-                resultAmount = _currencyConversion.Converting(amount, fromAccountCurrency, toAccountCurrency);
+                resultAmount = await _currencyConversion.Converting(resultAmount, fromAccountCurrency, toAccountCurrency);
             }
 
             resultAmount = Math.Round(resultAmount, 2);
 
-            fromAccount.AmoumtOnAccount -= amount;
-            _accountRepository.Update(fromAccount);
+            fromAccount.AmountOnAccount -= amount;
+            await _accountRepository.Update(fromAccount, cancellationToken);
 
-            toAccount.AmoumtOnAccount += resultAmount;
-            _accountRepository.Update(toAccount);
+            toAccount.AmountOnAccount += resultAmount;
+            await _accountRepository.Update(toAccount, cancellationToken);
 
-            _moneyTransferRepository.Create(new MoneyTransfer
+            await _moneyTransferRepository.Create(new MoneyTransfer
             {
                 Amount = resultAmount,
                 Currency = toAccountCurrency,
                 FromAccountId = fromAccountId,
                 ToAccountId = toAccountId
-            });
+            }, cancellationToken);
+            await _unitOfWork.SaveChanges();
         }
     }
 }

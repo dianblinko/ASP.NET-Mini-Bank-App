@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Minibank.Core.Domains; 
 using Minibank.Core.Domains.Accounts;
 using Minibank.Core.Domains.Accounts.Services;
 using Minibank.Web.Controllers.Accounts.Dto;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Minibank.Web.Controllers.Accounts
 {
@@ -20,15 +21,15 @@ namespace Minibank.Web.Controllers.Accounts
         }
 
         [HttpGet("{id}")]
-        public AccountDto GetUserAccounts(string id)
+        public async Task<AccountDto> GetUserAccount(string id, CancellationToken cancellationToken)
         {
-            var model = _accountService.GetById(id);
+            var model = await _accountService.GetById(id, cancellationToken);
 
             return new AccountDto
             {
                 Id = model.Id,
                 UserId = model.UserId,
-                AmoumtOnAccount = model.AmoumtOnAccount,
+                AmountOnAccount = model.AmountOnAccount,
                 Currency = model.Currency,
                 IsOpen = model.IsOpen,
                 OpeningDate = model.OpeningDate,
@@ -37,54 +38,56 @@ namespace Minibank.Web.Controllers.Accounts
         }
 
         [HttpGet]
-        public IEnumerable<AccountDto> GetAll()
+        public async Task<List<AccountDto>> GetAll(CancellationToken cancellationToken)
         {
-            return _accountService.GetAll()
+            return (await _accountService.GetAll(cancellationToken))
                 .Select(it => new AccountDto
                 {
                     Id = it.Id,
                     UserId = it.UserId,
-                    AmoumtOnAccount = it.AmoumtOnAccount,
+                    AmountOnAccount = it.AmountOnAccount,
                     Currency = it.Currency,
                     IsOpen = it.IsOpen,
                     OpeningDate = it.OpeningDate,
                     ClosingDate = it.ClosingDate
-                });
+                }).ToList();
         }
 
         [HttpPost]
-        public void Create(AccountDtoCreate model)
+        public Task Create(AccountDtoCreate model, CancellationToken cancellationToken)
         {
-            _accountService.Create(new Account
+            return _accountService.Create(new Account
             {
                 UserId = model.UserId,
-                AmoumtOnAccount = model.AmoumtOnAccount,
+                AmountOnAccount = model.AmountOnAccount,
                 Currency = model.Currency
-            });
+            }, cancellationToken);
         }
 
         [HttpPut("close/{id}")]
-        public void ToClose(string id)
+        public Task ToClose(string id, CancellationToken cancellationToken)
         {
-            _accountService.Close(id);
+            return _accountService.Close(id,cancellationToken);
         }
 
         [HttpDelete("{id}")]
-        public void Delete(string id)
-        {
-            _accountService.Delete(id);
+        public Task Delete(string id, CancellationToken cancellationToken)
+        { 
+            return _accountService.Delete(id, cancellationToken);
         }
 
         [HttpGet("calculateCommission")]
-        public double CalculateCommission(double amount, string fromAccountId, string toAccountId)
+        public Task<double> CalculateCommission(double amount, string fromAccountId, string toAccountId, 
+            CancellationToken cancellationToken)
         {
-            return _accountService.CalculateCommission(amount, fromAccountId, toAccountId);
+            return _accountService.CalculateCommission(amount, fromAccountId, toAccountId, cancellationToken);
         }
 
         [HttpPut("transferMoney")]
-        public void TransferMoney(double amount, string fromAccountId, string toAccountId)
+        public Task TransferMoney(double amount, string fromAccountId, string toAccountId, 
+            CancellationToken cancellationToken)
         {
-            _accountService.TransferMoney(amount, fromAccountId, toAccountId);
+            return _accountService.TransferMoney(amount, fromAccountId, toAccountId, cancellationToken);
         }
     }
 }

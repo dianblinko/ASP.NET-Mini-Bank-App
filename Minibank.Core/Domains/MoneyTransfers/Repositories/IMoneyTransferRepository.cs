@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Minibank.Core.Domains.MoneyTransfers.Repositories
 {
     public interface IMoneyTransferRepository
     { 
-        void Create(MoneyTransfer moneyTransfer);
+        Task Create(MoneyTransfer moneyTransfer, CancellationToken cancellationToken);
     }
 }

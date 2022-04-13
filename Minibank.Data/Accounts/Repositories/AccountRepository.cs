@@ -3,17 +3,27 @@ using Minibank.Core.Domains.Accounts;
 using Minibank.Core.Domains.Accounts.Repositories;
 using System;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Minibank.Data.Context;
 
 namespace Minibank.Data.Accounts.Repositories
 {
     public class AccountRepository : IAccountRepository
     {
-        private static List<AccountDbModel> _accountStorage = new List<AccountDbModel>();
+        private readonly MinibankContext _context;
 
-        public Account GetById(string id)
+        public AccountRepository(MinibankContext context)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
+            _context = context;
+        }
+        public async Task<Account> GetById(string id, CancellationToken cancellationToken)
+        {
+            var entity = await _context.Accounts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(it => it.Id == id, cancellationToken: cancellationToken);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
@@ -23,7 +33,7 @@ namespace Minibank.Data.Accounts.Repositories
             {
                 Id = entity.Id,
                 UserId = entity.UserId,
-                AmoumtOnAccount = entity.AmoumtOnAccount,
+                AmountOnAccount = entity.AmountOnAccount,
                 Currency = entity.Currency,
                 IsOpen = entity.IsOpen,
                 OpeningDate = entity.OpeningDate,
@@ -31,98 +41,84 @@ namespace Minibank.Data.Accounts.Repositories
             };
         }
 
-        public IEnumerable<Account> GetAll()
+        public Task<List<Account>> GetAll(CancellationToken cancellationToken)
         {
-            return _accountStorage.Select(it => new Account()
+            return _context.Accounts
+                .AsNoTracking()
+                .Select(it => new Account()
             {
                 Id = it.Id,
                 UserId = it.UserId,
-                AmoumtOnAccount = it.AmoumtOnAccount,
+                AmountOnAccount = it.AmountOnAccount,
                 Currency = it.Currency,
                 IsOpen = it.IsOpen,
                 OpeningDate = it.OpeningDate,
                 ClosingDate = it.ClosingDate
-            });
+            }).ToListAsync(cancellationToken: cancellationToken);
         }
 
-        public void Create(Account account)
+        public async Task Create(Account account, CancellationToken cancellationToken)
         {
             var entity = new AccountDbModel
             {
                 Id = Guid.NewGuid().ToString(),
                 UserId = account.UserId,
-                AmoumtOnAccount = account.AmoumtOnAccount,
+                AmountOnAccount = account.AmountOnAccount,
                 Currency = account.Currency, 
                 IsOpen = true,
                 OpeningDate = DateTime.Now,
                 ClosingDate = null
             };
-            _accountStorage.Add(entity);
+            await _context.Accounts.AddAsync(entity, cancellationToken);
         }
-        public void Update(Account account)
+        public async Task Update(Account account, CancellationToken cancellationToken)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == account.Id);
+            var entity = await _context.Accounts
+                .FirstOrDefaultAsync(it => it.Id == account.Id, cancellationToken: cancellationToken);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={account.Id} не найден");
             }
 
             entity.UserId = account.UserId;
-            entity.AmoumtOnAccount = account.AmoumtOnAccount;
+            entity.AmountOnAccount = account.AmountOnAccount;
             entity.Currency = account.Currency;
             entity.IsOpen = account.IsOpen;
             entity.ClosingDate = account.ClosingDate;
             entity.OpeningDate = account.OpeningDate;
         }
 
-        public void Delete(string id)
+        public async Task Delete(string id, CancellationToken cancellationToken)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
+            var entity = await _context.Accounts
+                .FirstOrDefaultAsync(it => it.Id == id, cancellationToken: cancellationToken);
             if (entity == null)
             {
                 throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
             }
 
-            _accountStorage.Remove(entity);
+            _context.Accounts.Remove(entity);
         }
 
-        public bool ExistForUserId(string userId)
+        public Task<bool> ExistForUserId(string userId, CancellationToken cancellationToken)
         {
-            return _accountStorage.Any(it => it.UserId == userId);
+            return _context.Accounts
+                .AnyAsync(it => it.UserId == userId, cancellationToken: cancellationToken);
         }
 
-        public void CloseAccount(string id)
+        public async Task CloseAccount(string id, CancellationToken cancellationToken)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
+            var entity = await _context.Accounts
+                .FirstOrDefaultAsync(it => it.Id == id, cancellationToken: cancellationToken);
             entity.IsOpen = false;
             entity.ClosingDate = DateTime.Now;
         }
 
-        public void SubAmount(string id, double amount)
+        public Task<bool> Exists(string id, CancellationToken cancellationToken)
         {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
-            if (entity == null)
-            {
-                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
-            }
-
-            entity.AmoumtOnAccount -= amount;
-        }
-
-        public void AddAmount(string id, double amount)
-        {
-            var entity = _accountStorage.FirstOrDefault(it => it.Id == id);
-            if (entity == null)
-            {
-                throw new ObjectNotFoundException($"Аккаунт id={id} не найден");
-            }
-
-            entity.AmoumtOnAccount += amount;
-        }
-
-        public bool Exists(string id)
-        {
-            return _accountStorage.Any(it =>it.Id == id);
+            return _context.Accounts
+                .AsNoTracking()
+                .AnyAsync(it =>it.Id == id, cancellationToken: cancellationToken);
         }
     }
 }
