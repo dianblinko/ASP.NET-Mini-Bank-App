@@ -39,7 +39,7 @@ namespace Minibank.Core.Domains.Accounts.Services
             }
             if (!Enum.IsDefined(typeof(CurrencyEnum), account.Currency))     
             {
-                throw new ValidationException("Задана недопустюмая валюта счета");
+                throw new ValidationException("Задана недопустимая валюта счета");
             }
 
             await _accountRepository.Create(account, cancellationToken);
@@ -106,7 +106,7 @@ namespace Minibank.Core.Domains.Accounts.Services
             }
             if (fromAccount.AmountOnAccount < amount)
             {
-                throw new ValidationException("Недостаточно средства");
+                throw new ValidationException("Недостаточно средств");
             }
             
             var fromAccountCurrency = fromAccount.Currency; 
