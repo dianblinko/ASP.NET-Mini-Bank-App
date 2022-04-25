@@ -40,16 +40,18 @@ public class UserServiceTests
         _userService.Create(user, _cancellationToken);
         
         _fakeUserRepository.Verify(obj => obj.Create(user, _cancellationToken), Times.Once);
+        _fakeUnitOfWork.Verify(obj => obj.SaveChanges());
     }
     
     [Fact]
     public void Delete_WithAccount_ShouldThrowException()
     {
+        var someId = "someId";
         _fakeAccountRepository
-            .Setup(repository => repository.ExistForUserId(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.ExistForUserId(someId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         
-        var exception = Assert.ThrowsAsync<ValidationException>(() => _userService.Delete("someId", _cancellationToken)).Result;
+        var exception = Assert.ThrowsAsync<ValidationException>(() => _userService.Delete(someId, _cancellationToken)).Result;
         
         Assert.Equal("Нельзя удалить пользователя с привязанными аккаунтами", exception.Message);
     }
@@ -57,27 +59,30 @@ public class UserServiceTests
     [Fact]
     public void Delete_SuccessPath_ShouldDeleteUser()
     {
+        var someId = "someId";
         _fakeAccountRepository
-            .Setup(repository => repository.ExistForUserId(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.ExistForUserId(someId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
         
-        _userService.Delete("someId", _cancellationToken);
+        _userService.Delete(someId, _cancellationToken);
 
-        _fakeUserRepository.Verify(obj => obj.Delete("someId", _cancellationToken), Times.Once);
+        _fakeUserRepository.Verify(obj => obj.Delete(someId, _cancellationToken), Times.Once);
+        _fakeUnitOfWork.Verify(obj => obj.SaveChanges());
     }
     
     [Fact]
     public void GetUser_SuccessPath_ReturnUser()
     {
+        var someId = "someId";
         var user = new User
         {
             Login = "someLogin"
         };
         _fakeUserRepository
-            .Setup(repository => repository.GetUser("someId", It.IsAny<CancellationToken>()))
+            .Setup(repository => repository.GetUser(someId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
         
-        var expectedUser = _userService.GetUser("someId", _cancellationToken).Result;
+        var expectedUser = _userService.GetUser(someId, _cancellationToken).Result;
 
         Assert.Equal(user, expectedUser);
     }
@@ -110,5 +115,6 @@ public class UserServiceTests
         _userService.Update(user, _cancellationToken);
 
         _fakeUserRepository.Verify(obj => obj.Update(user, _cancellationToken), Times.Once);
+        _fakeUnitOfWork.Verify(obj => obj.SaveChanges());
     }
 }

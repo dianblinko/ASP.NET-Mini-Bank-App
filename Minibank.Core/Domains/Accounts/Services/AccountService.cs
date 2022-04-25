@@ -126,13 +126,15 @@ namespace Minibank.Core.Domains.Accounts.Services
             toAccount.AmountOnAccount += resultAmount;
             await _accountRepository.Update(toAccount, cancellationToken);
 
-            await _moneyTransferRepository.Create(new MoneyTransfer
+            var moneyTransfer = new MoneyTransfer
             {
                 Amount = resultAmount,
                 Currency = toAccountCurrency,
                 FromAccountId = fromAccountId,
                 ToAccountId = toAccountId
-            }, cancellationToken);
+            };
+            
+            await _moneyTransferRepository.Create(moneyTransfer, cancellationToken);
             await _unitOfWork.SaveChanges();
         }
     }

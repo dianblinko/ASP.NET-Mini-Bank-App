@@ -66,10 +66,11 @@ public class AccountServiceTests
         _accountService.Create(account, _fakeCancellationToken);
         
         _fakeAccountRepository.Verify(obj => obj.Create(account, _fakeCancellationToken), Times.Once);
+        _fakeUnitOfWork.Verify(obj => obj.SaveChanges());
     }
     
     [Fact]
-    public void Creat_NonExistentLUserId_ShouldThrowException()
+    public void Create_NonExistentLUserId_ShouldThrowException()
     {
         var account = new Account
         {
@@ -91,24 +92,27 @@ public class AccountServiceTests
     [Fact]
     public void Delete_SuccessPath_ShouldDeleteAccount()
     {
-        _accountService.Delete("someId", _fakeCancellationToken);
+        var someId = "someId";
+        _accountService.Delete(someId, _fakeCancellationToken);
 
-        _fakeAccountRepository.Verify(obj => obj.Delete("someId", _fakeCancellationToken), Times.Once);
+        _fakeAccountRepository.Verify(obj => obj.Delete(someId, _fakeCancellationToken), Times.Once);
+        _fakeUnitOfWork.Verify(obj => obj.SaveChanges());
     }
 
     [Fact]
     public void GetById_SuccessPath_ReturnAccount()
     {
+        var someId = "someId";
         var account = new Account
         {
             UserId = "someUserId",
             AmountOnAccount = 1000.0,
             Currency = CurrencyEnum.RUB
         };
-        _fakeAccountRepository.Setup(repository => repository.GetById("someId", _fakeCancellationToken))
+        _fakeAccountRepository.Setup(repository => repository.GetById(someId, _fakeCancellationToken))
             .ReturnsAsync(account);
 
-        var detectedAccount = _accountService.GetById("someId", _fakeCancellationToken).Result;
+        var detectedAccount = _accountService.GetById(someId, _fakeCancellationToken).Result;
         
         Assert.Equal(account, detectedAccount);
     }
@@ -143,22 +147,24 @@ public class AccountServiceTests
     [Fact]
     public void Close_SuccessPath_ShouldCloseAccount()
     {
+        var someId = "someId";
         var account = new Account
         {
             UserId = "someUserId",
             AmountOnAccount = 0.0,
             Currency = CurrencyEnum.RUB
         };
-        _fakeAccountRepository.Setup(repository => repository.GetById("someId", _fakeCancellationToken))
+        _fakeAccountRepository.Setup(repository => repository.GetById(someId, _fakeCancellationToken))
             .ReturnsAsync(account);
 
-        _accountService.Close("someId", _fakeCancellationToken);
+        _accountService.Close(someId, _fakeCancellationToken);
         
-        _fakeAccountRepository.Verify(repository => repository.CloseAccount("someId", _fakeCancellationToken), Times.Once);
+        _fakeAccountRepository.Verify(repository => repository.CloseAccount(someId, _fakeCancellationToken), Times.Once);
+        _fakeUnitOfWork.Verify(obj => obj.SaveChanges());
     }
     
     [Fact]
-    public void CalculateCommission_BetweenOneUserAccounts_SuccesPath()
+    public void CalculateCommission_BetweenOneUserAccounts_SuccessPath()
     {
         double amount = 100.0;
         string someAccountId = "someAccountId";
@@ -168,7 +174,7 @@ public class AccountServiceTests
             AmountOnAccount = 0.0,
             Currency = CurrencyEnum.RUB
         };
-        _fakeAccountRepository.Setup(repository => repository.GetById(It.IsAny<string>(), _fakeCancellationToken))
+        _fakeAccountRepository.Setup(repository => repository.GetById(someAccountId, _fakeCancellationToken))
             .ReturnsAsync(account);
 
         var calculatedCommission = _accountService
@@ -178,7 +184,7 @@ public class AccountServiceTests
     }
     
     [Fact]
-    public void CalculateCommission_BetweenTwoUserAccounts_SuccesPath()
+    public void CalculateCommission_BetweenTwoUserAccounts_SuccessPath()
     {
         double amount = 100.0;
         string someAccountId1 = "someAccountId1";
@@ -209,7 +215,7 @@ public class AccountServiceTests
     [Fact]
     public void TransferMoney_SuccessPath_ShouldMoneyTransferCreate()
     {
-        var amount = 100.0;
+        var amount = 100.75;
         var fromAccountId = "someAccountId1";
         var toAccountId = "someAccountId2";
         var account1 = new Account
@@ -230,10 +236,23 @@ public class AccountServiceTests
             .ReturnsAsync(account1);    
         _fakeAccountRepository.Setup(repository => repository.GetById(toAccountId, _fakeCancellationToken))
             .ReturnsAsync(account2);
+        var moneyTransfer = new MoneyTransfer
+        {
+            Amount = amount,
+            Currency = CurrencyEnum.RUB,
+            FromAccountId = fromAccountId,
+            ToAccountId = toAccountId
+        };
 
         _accountService.TransferMoney(amount, fromAccountId, toAccountId, _fakeCancellationToken);
-        
-        _fakeMoneyTransferRepository.Verify(moneyTransferRep => moneyTransferRep.Create(It.IsAny<MoneyTransfer>(), It.IsAny<CancellationToken>()), Times.Once);
+
+        _fakeMoneyTransferRepository.Verify(
+            moneyTransferRep => moneyTransferRep.Create(
+                It.Is<MoneyTransfer>(mt =>
+                    mt.Amount == amount && mt.Currency == account2.Currency && mt.FromAccountId == fromAccountId &&
+                    mt.ToAccountId == toAccountId),
+                _fakeCancellationToken), Times.Once);
+        _fakeUnitOfWork.Verify(obj => obj.SaveChanges());
     }
     
     [Fact]
@@ -333,7 +352,7 @@ public class AccountServiceTests
     }
     
     [Fact]
-    public void TransferMoney_InsufficienFunds_ShouldThrowException()
+    public void TransferMoney_InsufficientFunds_ShouldThrowException()
     {
         var amount = 100.0;
         var fromAccountId = "someAccountId1";
