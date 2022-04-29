@@ -111,6 +111,7 @@ namespace Minibank.Core.Domains.Accounts.Services
             
             var fromAccountCurrency = fromAccount.Currency; 
             var toAccountCurrency = toAccount.Currency;
+            amount = Math.Round(amount, 2);
             double resultAmount = amount - await CalculateCommission(amount, fromAccountId, toAccountId, cancellationToken);
 
             if (fromAccountCurrency != toAccountCurrency)

@@ -12,109 +12,199 @@ namespace Minibank.Core.Tests;
 
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository> _fakeUserRepository;
+    private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly CancellationToken _cancellationToken;
-    private readonly Mock<IAccountRepository> _fakeAccountRepository;
-    private readonly Mock<IUnitOfWork> _fakeUnitOfWork;
+    private readonly Mock<IAccountRepository> _accountRepositoryMock;
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly IUserService _userService;
 
     public UserServiceTests()
     {
-        _fakeAccountRepository = new Mock<IAccountRepository>();
-        _fakeUserRepository = new Mock<IUserRepository>();
+        _accountRepositoryMock = new Mock<IAccountRepository>();
+        _userRepositoryMock = new Mock<IUserRepository>();
         _cancellationToken = new CancellationToken();
-        _fakeUnitOfWork = new Mock<IUnitOfWork>();
-        _userService = new UserService(_fakeUserRepository.Object, _fakeAccountRepository.Object,
-            _fakeUnitOfWork.Object);
+        _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _userService = new UserService(_userRepositoryMock.Object, _accountRepositoryMock.Object,
+            _unitOfWorkMock.Object);
     }
         
     [Fact]
-    public void Create_SuccessPath_ShouldCreateUser()
+    public async Task Create_SuccessPath_ShouldCreateUser()
     {
+        //ARRANGE
         var user = new User
         {
             Login = "Artem",
             Email = "qwerty"
         };
-
-        _userService.Create(user, _cancellationToken);
         
-        _fakeUserRepository.Verify(obj => obj.Create(user, _cancellationToken), Times.Once);
-        _fakeUnitOfWork.Verify(obj => obj.SaveChanges());
+        //ACT
+        await _userService.Create(user, _cancellationToken);
+        
+        //ASSERT
+        _userRepositoryMock.Verify(obj => obj.Create(user, _cancellationToken), Times.Once);
+        _unitOfWorkMock.Verify(obj => obj.SaveChanges());
+    }
+    [Fact]
+    public async Task Create_SuccessPath_RightUserFields()
+    {
+        //ARRANGE
+        var login = "Artem";
+        var email = "qwerty";
+        var testUser = new User
+        {
+            Login = login,
+            Email = email
+        };
+        
+        //ACT
+        await _userService.Create(testUser, _cancellationToken);
+        
+        //ASSERT
+        _userRepositoryMock.Verify(
+            obj => obj.Create(
+                It.Is<User>(user =>
+                    user.Id == null && user.Login == login && user.Email == email),
+                _cancellationToken), Times.Once);
     }
     
     [Fact]
-    public void Delete_WithAccount_ShouldThrowException()
+    public async Task Delete_WithAccount_ShouldThrowException()
     {
+        //ARRANGE
         var someId = "someId";
-        _fakeAccountRepository
+        _accountRepositoryMock
             .Setup(repository => repository.ExistForUserId(someId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .Returns(Task.FromResult(true));
         
-        var exception = Assert.ThrowsAsync<ValidationException>(() => _userService.Delete(someId, _cancellationToken)).Result;
+        //ACT
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _userService.Delete(someId, _cancellationToken));
         
+        //ASSERT
         Assert.Equal("Нельзя удалить пользователя с привязанными аккаунтами", exception.Message);
     }
     
     [Fact]
-    public void Delete_SuccessPath_ShouldDeleteUser()
+    public async Task Delete_SuccessPath_ShouldDeleteUser()
     {
+        //ARRANGE
         var someId = "someId";
-        _fakeAccountRepository
+        _accountRepositoryMock
             .Setup(repository => repository.ExistForUserId(someId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+            .Returns(Task.FromResult(false));
         
-        _userService.Delete(someId, _cancellationToken);
+        //ACT
+        await _userService.Delete(someId, _cancellationToken);
 
-        _fakeUserRepository.Verify(obj => obj.Delete(someId, _cancellationToken), Times.Once);
-        _fakeUnitOfWork.Verify(obj => obj.SaveChanges());
+        //ASSERT
+        _userRepositoryMock.Verify(obj => obj.Delete(someId, _cancellationToken), Times.Once);
+        _unitOfWorkMock.Verify(obj => obj.SaveChanges());
     }
     
     [Fact]
-    public void GetUser_SuccessPath_ReturnUser()
+    public async Task GetUser_SuccessPath_ReturnUser()
     {
+        //ARRANGE
         var someId = "someId";
         var user = new User
         {
             Login = "someLogin"
         };
-        _fakeUserRepository
+        _userRepositoryMock
             .Setup(repository => repository.GetUser(someId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(user);
+            .Returns(Task.FromResult(user));
         
-        var expectedUser = _userService.GetUser(someId, _cancellationToken).Result;
+        //ACT
+        var expectedUser = await _userService.GetUser(someId, _cancellationToken);
 
+        //ASSERT
         Assert.Equal(user, expectedUser);
     }
     
     [Fact]
-    public void GetAll_SuccessPath_ReturnUsers()
+    public async Task GetUser_SuccessPath_ReturnRightUserFields()
     {
+        //ARRANGE
+        var someId = "someId";
+        var login = "someLogin";
+        var email = "someEmail";
+        var user = new User
+        {
+            Id = someId,
+            Login = login,
+            Email = email
+        };
+        _userRepositoryMock
+            .Setup(repository => repository.GetUser(someId, It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(user));
+        
+        //ACT
+        var expectedUser = await _userService.GetUser(someId, _cancellationToken);
+
+        //ASSERT
+        Assert.True(expectedUser.Id == someId && expectedUser.Login == login && expectedUser.Email == email);
+    }
+    
+    [Fact]
+    public async Task GetAll_SuccessPath_ReturnUsers()
+    {
+        //ARRANGE
         var users = new List<User>
         {
             new User{ Login = "someLogin1"},
             new User{ Login = "someLogin2"}
         };
-        _fakeUserRepository
+        _userRepositoryMock
             .Setup(repository => repository.GetAll(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(users);
+            .Returns(Task.FromResult(users));
         
-        var expectedUsers = _userService.GetAll(_cancellationToken).Result;
+        //ACT
+        var expectedUsers = await _userService.GetAll(_cancellationToken);
 
+        //ASSERT
         Assert.Equal(users, expectedUsers);
     }
     
     [Fact]
-    public void Update_SuccessPath_UpdateUser()
+    public async Task Update_SuccessPath_UpdateUser()
     {
+        //ARRANGE
         var user = new User
         {
-            Login = "someLogin"
+            Id = "someId",
+            Login = "someLogin",
+            Email = "someEmail"
         };
 
-        _userService.Update(user, _cancellationToken);
+        //ACT
+        await _userService.Update(user, _cancellationToken);
 
-        _fakeUserRepository.Verify(obj => obj.Update(user, _cancellationToken), Times.Once);
-        _fakeUnitOfWork.Verify(obj => obj.SaveChanges());
+        //ASSERT
+        _userRepositoryMock.Verify(obj => obj.Update(user, _cancellationToken), Times.Once);
+        _unitOfWorkMock.Verify(obj => obj.SaveChanges());
+    }
+    
+    [Fact]
+    public async Task Update_SuccessPath_UpdateRightUserFields()
+    {
+        //ARRANGE
+        var someId = "someId";
+        var login = "someLogin";
+        var email = "someEmail";
+        var user = new User
+        {
+            Id = someId,
+            Login = login,
+            Email = email
+        };
+
+        //ACT
+        await _userService.Update(user, _cancellationToken);
+
+        //ASSERT
+        _userRepositoryMock.Verify(
+            obj => obj.Update(It.Is<User>(user => user.Id == someId && user.Email == email && user.Login == login),
+                _cancellationToken), Times.Once);
+        _unitOfWorkMock.Verify(obj => obj.SaveChanges());
     }
 }
