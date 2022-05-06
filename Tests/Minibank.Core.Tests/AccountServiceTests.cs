@@ -186,8 +186,9 @@ public class AccountServiceTests
         var detectedAccount = await _accountService.GetById(id, _cancellationToken);
         
         //ASSERT
-        Assert.True(account.Id == id && account.UserId == userId && account.Currency == currency && Math.Abs(account.AmountOnAccount - amount) < 0.001 &&
-                    account.IsOpen == isOpen && account.ClosingDate == closingDate && account.OpeningDate == openingDate);
+        //Assert.True(account.Id == id && account.UserId == userId && account.Currency == currency && Math.Abs(account.AmountOnAccount - amount) < 0.001 &&
+        //            account.IsOpen == isOpen && account.ClosingDate == closingDate && account.OpeningDate == openingDate);
+        Assert.Equal(account, detectedAccount);
     }
 
     [Fact]
