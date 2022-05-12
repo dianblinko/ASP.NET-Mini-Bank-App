@@ -39,7 +39,7 @@ namespace Minibank.Core.Domains.Accounts.Services
             }
             if (!Enum.IsDefined(typeof(CurrencyEnum), account.Currency))     
             {
-                throw new ValidationException("Задана недопустюмая валюта счета");
+                throw new ValidationException("Задана недопустимая валюта счета");
             }
 
             await _accountRepository.Create(account, cancellationToken);
@@ -106,11 +106,12 @@ namespace Minibank.Core.Domains.Accounts.Services
             }
             if (fromAccount.AmountOnAccount < amount)
             {
-                throw new ValidationException("Недостаточно средства");
+                throw new ValidationException("Недостаточно средств");
             }
             
             var fromAccountCurrency = fromAccount.Currency; 
             var toAccountCurrency = toAccount.Currency;
+            amount = Math.Round(amount, 2);
             double resultAmount = amount - await CalculateCommission(amount, fromAccountId, toAccountId, cancellationToken);
 
             if (fromAccountCurrency != toAccountCurrency)
@@ -126,13 +127,15 @@ namespace Minibank.Core.Domains.Accounts.Services
             toAccount.AmountOnAccount += resultAmount;
             await _accountRepository.Update(toAccount, cancellationToken);
 
-            await _moneyTransferRepository.Create(new MoneyTransfer
+            var moneyTransfer = new MoneyTransfer
             {
                 Amount = resultAmount,
                 Currency = toAccountCurrency,
                 FromAccountId = fromAccountId,
                 ToAccountId = toAccountId
-            }, cancellationToken);
+            };
+            
+            await _moneyTransferRepository.Create(moneyTransfer, cancellationToken);
             await _unitOfWork.SaveChanges();
         }
     }
